@@ -2,7 +2,7 @@ spring:
   application:
     name: backend
   datasource:
-    url: jdbc:postgresql://localhost:5432/hrplatform
+    url: jdbc:postgresql://localhost:5433/hrplatform
     username: hruser
     password: hrpassword
     driver-class-name: org.postgresql.Driver
