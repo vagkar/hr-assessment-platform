@@ -20,7 +20,7 @@ spring:
 
 app:
   jwt:
-    secret: "not yet a secret"
+    secret: ${JWT_SECRET}
     expiration-ms: 86400000
 
 server:
