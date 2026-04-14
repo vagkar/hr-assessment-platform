@@ -10,7 +10,6 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -18,7 +17,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/assessments")
 @RequiredArgsConstructor
-public class AssessmentController {
+public class AssessmentController extends BaseController {
 
     private final AssessmentService assessmentService;
 
@@ -52,7 +51,4 @@ public class AssessmentController {
                 .body(assessmentService.createInvite(id, request, getPrincipal().companyId()));
     }
 
-    private UserPrincipal getPrincipal() {
-        return (UserPrincipal) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-    }
 }
