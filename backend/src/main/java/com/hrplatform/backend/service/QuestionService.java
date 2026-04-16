@@ -1,11 +1,13 @@
 package com.hrplatform.backend.service;
 
+import com.hrplatform.backend.exception.BadRequestException;
 import com.hrplatform.backend.exception.ResourceNotFoundException;
 import com.hrplatform.backend.model.dto.question.QuestionOptionResponse;
 import com.hrplatform.backend.model.dto.question.QuestionRequest;
 import com.hrplatform.backend.model.dto.question.QuestionResponse;
 import com.hrplatform.backend.model.entity.Question;
 import com.hrplatform.backend.model.entity.QuestionOption;
+import com.hrplatform.backend.repository.AnswerRepository;
 import com.hrplatform.backend.repository.AssessmentRepository;
 import com.hrplatform.backend.repository.QuestionOptionRepository;
 import com.hrplatform.backend.repository.QuestionRepository;
@@ -23,6 +25,7 @@ public class QuestionService {
     private final QuestionRepository questionRepository;
     private final QuestionOptionRepository questionOptionRepository;
     private final AssessmentRepository assessmentRepository;
+    private final AnswerRepository answerRepository;
 
     public List<QuestionResponse> getByAssessment(Long assessmentId, Long companyId) {
         assessmentRepository.findByIdAndCompanyId(assessmentId, companyId)
@@ -60,6 +63,10 @@ public class QuestionService {
     public QuestionResponse update(Long questionId, QuestionRequest request, Long companyId) {
         Question question = questionRepository.findByIdAndAssessmentCompanyId(questionId, companyId)
                 .orElseThrow(() -> new ResourceNotFoundException("Question not found"));
+
+        if (answerRepository.existsByQuestionId(questionId)) {
+            throw new BadRequestException("Cannot edit a question that has already been answered");
+        }
 
         question.setText(request.text());
         question.setType(request.type());

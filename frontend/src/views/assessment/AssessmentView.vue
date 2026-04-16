@@ -2,7 +2,7 @@
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAssessmentStore } from '@/stores/assessment'
-import { getQuestions, createQuestion, deleteQuestion } from '@/api/questions'
+import { getQuestions, createQuestion, updateQuestion, deleteQuestion } from '@/api/questions'
 import { createInvite } from '@/api/assessments'
 import BaseButton from '@/components/BaseButton.vue'
 import BaseCard from '@/components/BaseCard.vue'
@@ -17,6 +17,7 @@ const assessment = ref(null)
 const questions = ref([])
 
 const showQuestionForm = ref(false)
+const editingQuestionId = ref(null)
 const questionForm = ref({ text: '', type: 'MULTIPLE_CHOICE', orderIndex: 1, options: [] })
 const newOption = ref({ text: '', isCorrect: false })
 
@@ -37,6 +38,23 @@ async function loadQuestions() {
   questions.value = res.data
 }
 
+function openEditQuestion(q) {
+  editingQuestionId.value = q.id
+  questionForm.value = {
+    text: q.text,
+    type: q.type,
+    orderIndex: q.orderIndex,
+    options: q.options.map((o) => ({ text: o.text, isCorrect: o.isCorrect })),
+  }
+  showQuestionForm.value = true
+}
+
+function cancelQuestionForm() {
+  showQuestionForm.value = false
+  editingQuestionId.value = null
+  error.value = null
+}
+
 function addOption() {
   if (!newOption.value.text) return
   questionForm.value.options.push({ ...newOption.value })
@@ -47,16 +65,20 @@ function removeOption(index) {
   questionForm.value.options.splice(index, 1)
 }
 
-async function handleCreateQuestion() {
+async function handleSubmitQuestion() {
   error.value = null
   loading.value = true
   try {
-    await createQuestion(assessmentId, questionForm.value)
+    if (editingQuestionId.value) {
+      await updateQuestion(editingQuestionId.value, questionForm.value)
+    } else {
+      await createQuestion(assessmentId, questionForm.value)
+    }
+    cancelQuestionForm()
     questionForm.value = { text: '', type: 'MULTIPLE_CHOICE', orderIndex: questions.value.length + 1, options: [] }
-    showQuestionForm.value = false
     await loadQuestions()
   } catch (e) {
-    error.value = e.response?.data?.message || 'Failed to create question'
+    error.value = e.response?.data?.message || 'Failed to save question'
   } finally {
     loading.value = false
   }
@@ -103,7 +125,7 @@ async function handleInvite() {
           <BaseButton variant="outline" @click="showInviteForm = !showInviteForm">
             {{ showInviteForm ? 'Cancel' : 'Send Invite' }}
           </BaseButton>
-          <BaseButton @click="showQuestionForm = !showQuestionForm">
+          <BaseButton @click="showQuestionForm ? cancelQuestionForm() : (showQuestionForm = true)">
             {{ showQuestionForm ? 'Cancel' : '+ Add Question' }}
           </BaseButton>
         </div>
@@ -136,8 +158,8 @@ async function handleInvite() {
 
       <!-- Question form -->
       <BaseCard v-if="showQuestionForm" style="margin-bottom: 1.5rem">
-        <h2>New Question</h2>
-        <form @submit.prevent="handleCreateQuestion">
+        <h2>{{ editingQuestionId ? 'Edit Question' : 'New Question' }}</h2>
+        <form @submit.prevent="handleSubmitQuestion">
           <FormGroup label="Question Text">
             <textarea v-model="questionForm.text" rows="2" required />
           </FormGroup>
@@ -174,7 +196,7 @@ async function handleInvite() {
           <p v-if="error" class="error-text">{{ error }}</p>
           <div class="form-actions">
             <BaseButton type="submit" :loading="loading">
-              {{ loading ? 'Saving...' : 'Save Question' }}
+              {{ loading ? 'Saving...' : editingQuestionId ? 'Save Changes' : 'Save Question' }}
             </BaseButton>
           </div>
         </form>
@@ -193,6 +215,7 @@ async function handleInvite() {
               </li>
             </ul>
           </div>
+          <BaseButton variant="outline" @click="openEditQuestion(q)">Edit</BaseButton>
           <BaseButton variant="danger" @click="handleDeleteQuestion(q.id)">Delete</BaseButton>
         </BaseCard>
       </div>

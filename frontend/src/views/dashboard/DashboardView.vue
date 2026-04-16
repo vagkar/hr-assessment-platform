@@ -10,21 +10,48 @@ const router = useRouter()
 const assessmentStore = useAssessmentStore()
 
 const showForm = ref(false)
+const editingId = ref(null)
 const form = ref({ title: '', description: '', durationMinutes: 30, isActive: true })
 const error = ref(null)
 const loading = ref(false)
 
 onMounted(() => assessmentStore.fetchAll())
 
-async function handleCreate() {
+function openCreate() {
+  editingId.value = null
+  form.value = { title: '', description: '', durationMinutes: 30, isActive: true }
+  showForm.value = true
+}
+
+function openEdit(assessment) {
+  editingId.value = assessment.id
+  form.value = {
+    title: assessment.title,
+    description: assessment.description || '',
+    durationMinutes: assessment.durationMinutes,
+    isActive: assessment.isActive,
+  }
+  showForm.value = true
+}
+
+function cancelForm() {
+  showForm.value = false
+  editingId.value = null
+  error.value = null
+}
+
+async function handleSubmit() {
   error.value = null
   loading.value = true
   try {
-    await assessmentStore.create(form.value)
-    form.value = { title: '', description: '', durationMinutes: 30, isActive: true }
-    showForm.value = false
+    if (editingId.value) {
+      await assessmentStore.update(editingId.value, form.value)
+    } else {
+      await assessmentStore.create(form.value)
+    }
+    cancelForm()
   } catch (e) {
-    error.value = e.response?.data?.message || 'Failed to create assessment'
+    error.value = e.response?.data?.message || 'Failed to save assessment'
   } finally {
     loading.value = false
   }
@@ -40,14 +67,14 @@ async function handleDelete(id) {
   <div>
     <header class="dashboard-header">
       <h1>Assessments</h1>
-      <BaseButton @click="showForm = !showForm">
+      <BaseButton @click="showForm ? cancelForm() : openCreate()">
         {{ showForm ? 'Cancel' : '+ New Assessment' }}
       </BaseButton>
     </header>
 
     <BaseCard v-if="showForm" style="margin-bottom: 1.5rem">
-      <h2>New Assessment</h2>
-      <form @submit.prevent="handleCreate">
+      <h2>{{ editingId ? 'Edit Assessment' : 'New Assessment' }}</h2>
+      <form @submit.prevent="handleSubmit">
         <FormGroup label="Title">
           <input v-model="form.title" type="text" required />
         </FormGroup>
@@ -60,7 +87,7 @@ async function handleDelete(id) {
         <p v-if="error" class="error-text">{{ error }}</p>
         <div class="form-actions">
           <BaseButton type="submit" :loading="loading">
-            {{ loading ? 'Creating...' : 'Create' }}
+            {{ loading ? 'Saving...' : editingId ? 'Save Changes' : 'Create' }}
           </BaseButton>
         </div>
       </form>
@@ -83,6 +110,7 @@ async function handleDelete(id) {
           <BaseButton variant="outline" @click="router.push(`/assessments/${assessment.id}`)">
             Open
           </BaseButton>
+          <BaseButton variant="outline" @click="openEdit(assessment)">Edit</BaseButton>
           <BaseButton variant="danger" @click="handleDelete(assessment.id)">Delete</BaseButton>
         </div>
       </BaseCard>
