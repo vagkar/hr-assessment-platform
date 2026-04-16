@@ -26,6 +26,18 @@ const router = createRouter({
       path: '/assessments/:id',
       component: () => import('@/views/assessment/AssessmentView.vue'),
     },
+    {
+      path: '/candidate/:token',
+      name: 'candidate-session',
+      component: () => import('@/views/candidate/CandidateSessionView.vue'),
+      meta: { public: true },
+    },
+    {
+      path: '/candidate/:token/complete',
+      name: 'candidate-complete',
+      component: () => import('@/views/candidate/CandidateCompleteView.vue'),
+      meta: { public: true },
+    },
   ],
 })
 
