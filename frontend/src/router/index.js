@@ -22,6 +22,10 @@ const router = createRouter({
       path: '/dashboard',
       component: () => import('@/views/dashboard/DashboardView.vue'),
     },
+    {
+      path: '/assessments/:id',
+      component: () => import('@/views/assessment/AssessmentView.vue'),
+    },
   ],
 })
 
