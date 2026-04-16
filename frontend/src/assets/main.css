@@ -1,0 +1,152 @@
+/* ── Variables ─────────────────────────────────────────── */
+:root {
+  --color-primary: #2563eb;
+  --color-primary-hover: #1d4ed8;
+  --color-danger: #dc2626;
+  --color-success: #16a34a;
+  --color-text: #111827;
+  --color-text-muted: #6b7280;
+  --color-border: #d1d5db;
+  --color-bg: #f3f4f6;
+  --color-bg-card: #ffffff;
+
+  --radius: 6px;
+  --shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+
+  --space-xs: 0.25rem;
+  --space-sm: 0.5rem;
+  --space-md: 1rem;
+  --space-lg: 1.5rem;
+  --space-xl: 2rem;
+}
+
+/* ── Reset ──────────────────────────────────────────────── */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* ── Base ───────────────────────────────────────────────── */
+body {
+  font-family: system-ui, -apple-system, sans-serif;
+  font-size: 1rem;
+  color: var(--color-text);
+  background: var(--color-bg);
+  line-height: 1.5;
+}
+
+a {
+  color: var(--color-primary);
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+/* ── Form elements ──────────────────────────────────────── */
+input, textarea, select {
+  width: 100%;
+  padding: var(--space-sm);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  font-size: 1rem;
+  font-family: inherit;
+  color: var(--color-text);
+  background: var(--color-bg-card);
+  transition: border-color 0.15s;
+}
+
+input:focus, textarea:focus, select:focus {
+  outline: none;
+  border-color: var(--color-primary);
+}
+
+label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--color-text);
+}
+
+/* ── Buttons ────────────────────────────────────────────── */
+button, .btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.625rem var(--space-md);
+  border: none;
+  border-radius: var(--radius);
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s, opacity 0.15s;
+}
+
+button:disabled, .btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btn-primary {
+  background: var(--color-primary);
+  color: white;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: var(--color-primary-hover);
+}
+
+.btn-danger {
+  background: var(--color-danger);
+  color: white;
+}
+
+.btn-outline {
+  background: transparent;
+  border: 1px solid var(--color-border);
+  color: var(--color-text);
+}
+
+.btn-outline:hover:not(:disabled) {
+  background: var(--color-bg);
+}
+
+/* ── Layout ─────────────────────────────────────────────── */
+.page {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: var(--space-xl) var(--space-md);
+}
+
+.card {
+  background: var(--color-bg-card);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: var(--space-xl);
+}
+
+/* ── Form layout ────────────────────────────────────────── */
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  margin-bottom: var(--space-md);
+}
+
+.form-actions {
+  display: flex;
+  gap: var(--space-sm);
+  margin-top: var(--space-md);
+}
+
+/* ── Feedback ───────────────────────────────────────────── */
+.error-text {
+  color: var(--color-danger);
+  font-size: 0.875rem;
+}
+
+.text-muted {
+  color: var(--color-text-muted);
+  font-size: 0.875rem;
+}

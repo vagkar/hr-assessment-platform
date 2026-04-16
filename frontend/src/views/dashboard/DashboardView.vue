@@ -14,6 +14,6 @@ function logout() {
 <template>
   <div>
     <h1>Dashboard</h1>
-    <button @click="logout">Logout</button>
+    <button class="btn btn-outline" @click="logout">Logout</button>
   </div>
 </template>
