@@ -2,6 +2,8 @@
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { getResults, getSessionDetail } from '@/api/results'
+import BaseButton from '@/components/BaseButton.vue'
+import BaseCard from '@/components/BaseCard.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -38,19 +40,18 @@ function scoreColor(score) {
 </script>
 
 <template>
-  <div class="page">
-    <button class="btn btn-outline" style="margin-bottom: 1rem" @click="router.push(`/assessments/${assessmentId}`)">
+  <div>
+    <BaseButton variant="outline" style="margin-bottom: 1rem" @click="router.push(`/assessments/${assessmentId}`)">
       ← Back
-    </button>
+    </BaseButton>
 
     <h1 style="margin-bottom: 1.5rem">Results</h1>
 
     <p v-if="error" class="error-text">{{ error }}</p>
-
-    <div v-if="results.length === 0 && !error" class="text-muted">No results yet.</div>
+    <p v-if="results.length === 0 && !error" class="text-muted">No results yet.</p>
 
     <!-- Results table -->
-    <div v-if="!selectedSession" class="card">
+    <BaseCard v-if="!selectedSession">
       <table class="results-table">
         <thead>
           <tr>
@@ -77,15 +78,15 @@ function scoreColor(score) {
               {{ r.completedAt ? new Date(r.completedAt).toLocaleDateString() : '—' }}
             </td>
             <td>
-              <button class="btn btn-outline" @click="openDetail(r.sessionId)">View</button>
+              <BaseButton variant="outline" @click="openDetail(r.sessionId)">View</BaseButton>
             </td>
           </tr>
         </tbody>
       </table>
-    </div>
+    </BaseCard>
 
     <!-- Session detail -->
-    <div v-if="selectedSession" class="card">
+    <BaseCard v-if="selectedSession">
       <div class="detail-header">
         <div>
           <h2>{{ selectedSession.candidateName }}</h2>
@@ -95,7 +96,7 @@ function scoreColor(score) {
           <span v-if="selectedSession.score !== null" :class="['score-badge', 'score-large', scoreColor(selectedSession.score)]">
             {{ selectedSession.score }}%
           </span>
-          <button class="btn btn-outline" @click="closeDetail">Close</button>
+          <BaseButton variant="outline" @click="closeDetail">Close</BaseButton>
         </div>
       </div>
 
@@ -119,7 +120,7 @@ function scoreColor(score) {
           </p>
         </div>
       </div>
-    </div>
+    </BaseCard>
   </div>
 </template>
 

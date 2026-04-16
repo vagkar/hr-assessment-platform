@@ -4,6 +4,9 @@ import { useRoute, useRouter } from 'vue-router'
 import { useAssessmentStore } from '@/stores/assessment'
 import { getQuestions, createQuestion, deleteQuestion } from '@/api/questions'
 import { createInvite } from '@/api/assessments'
+import BaseButton from '@/components/BaseButton.vue'
+import BaseCard from '@/components/BaseCard.vue'
+import FormGroup from '@/components/FormGroup.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -82,10 +85,10 @@ async function handleInvite() {
 </script>
 
 <template>
-  <div class="page">
-    <button class="btn btn-outline" style="margin-bottom: 1rem" @click="router.push('/dashboard')">
+  <div>
+    <BaseButton variant="outline" style="margin-bottom: 1rem" @click="router.push('/dashboard')">
       ← Back
-    </button>
+    </BaseButton>
 
     <div v-if="assessment">
       <header class="assessment-header">
@@ -94,78 +97,69 @@ async function handleInvite() {
           <p class="text-muted">{{ assessment.durationMinutes }} min</p>
         </div>
         <div class="header-actions">
-          <button class="btn btn-outline" @click="router.push(`/assessments/${assessmentId}/results`)">
+          <BaseButton variant="outline" @click="router.push(`/assessments/${assessmentId}/results`)">
             Results
-          </button>
-          <button class="btn btn-outline" @click="showInviteForm = !showInviteForm">
+          </BaseButton>
+          <BaseButton variant="outline" @click="showInviteForm = !showInviteForm">
             {{ showInviteForm ? 'Cancel' : 'Send Invite' }}
-          </button>
-          <button class="btn btn-primary" @click="showQuestionForm = !showQuestionForm">
+          </BaseButton>
+          <BaseButton @click="showQuestionForm = !showQuestionForm">
             {{ showQuestionForm ? 'Cancel' : '+ Add Question' }}
-          </button>
+          </BaseButton>
         </div>
       </header>
 
       <!-- Invite form -->
-      <div v-if="showInviteForm" class="card" style="margin-bottom: 1.5rem">
+      <BaseCard v-if="showInviteForm" style="margin-bottom: 1.5rem">
         <h2>Send Invite</h2>
         <form @submit.prevent="handleInvite">
-          <div class="form-group">
-            <label>Candidate Name</label>
+          <FormGroup label="Candidate Name">
             <input v-model="inviteForm.candidateName" type="text" required />
-          </div>
-          <div class="form-group">
-            <label>Candidate Email</label>
+          </FormGroup>
+          <FormGroup label="Candidate Email">
             <input v-model="inviteForm.candidateEmail" type="email" required />
-          </div>
+          </FormGroup>
           <div class="form-actions">
-            <button type="submit" class="btn btn-primary" :disabled="loading">
+            <BaseButton type="submit" :loading="loading">
               {{ loading ? 'Sending...' : 'Send' }}
-            </button>
+            </BaseButton>
           </div>
         </form>
-      </div>
+      </BaseCard>
 
       <!-- Invite result -->
-      <div v-if="inviteResult" class="card invite-result">
+      <BaseCard v-if="inviteResult" class="invite-result" style="margin-bottom: 1.5rem">
         <p><strong>Invite created!</strong> Share this link with the candidate:</p>
         <code>{{ `http://localhost:5173/candidate/${inviteResult.inviteToken}` }}</code>
-        <button class="btn btn-outline" style="margin-top: 0.5rem" @click="inviteResult = null">Dismiss</button>
-      </div>
+        <BaseButton variant="outline" style="margin-top: 0.5rem" @click="inviteResult = null">Dismiss</BaseButton>
+      </BaseCard>
 
       <!-- Question form -->
-      <div v-if="showQuestionForm" class="card" style="margin-bottom: 1.5rem">
+      <BaseCard v-if="showQuestionForm" style="margin-bottom: 1.5rem">
         <h2>New Question</h2>
         <form @submit.prevent="handleCreateQuestion">
-          <div class="form-group">
-            <label>Question Text</label>
+          <FormGroup label="Question Text">
             <textarea v-model="questionForm.text" rows="2" required />
-          </div>
-          <div class="form-group">
-            <label>Type</label>
+          </FormGroup>
+          <FormGroup label="Type">
             <select v-model="questionForm.type">
               <option value="MULTIPLE_CHOICE">Multiple Choice</option>
               <option value="TRUE_FALSE">True / False</option>
               <option value="OPEN_TEXT">Open Text</option>
             </select>
-          </div>
-          <div class="form-group">
-            <label>Order</label>
+          </FormGroup>
+          <FormGroup label="Order">
             <input v-model.number="questionForm.orderIndex" type="number" min="1" required />
-          </div>
+          </FormGroup>
 
           <div v-if="questionForm.type !== 'OPEN_TEXT'">
             <label>Options</label>
-            <div
-              v-for="(opt, i) in questionForm.options"
-              :key="i"
-              class="option-row"
-            >
+            <div v-for="(opt, i) in questionForm.options" :key="i" class="option-row">
               <span>{{ opt.text }}</span>
               <span :class="opt.isCorrect ? 'correct' : 'wrong'">
                 {{ opt.isCorrect ? 'Correct' : 'Wrong' }}
               </span>
-              <button type="button" class="btn btn-outline" @click="removeOption(i)">Remove</button>
+              <BaseButton type="button" variant="outline" @click="removeOption(i)">Remove</BaseButton>
             </div>
             <div class="option-add">
               <input v-model="newOption.text" type="text" placeholder="Option text" />
@@ -173,38 +167,34 @@ async function handleInvite() {
                 <input v-model="newOption.isCorrect" type="checkbox" />
                 Correct
               </label>
-              <button type="button" class="btn btn-outline" @click="addOption">Add</button>
+              <BaseButton type="button" variant="outline" @click="addOption">Add</BaseButton>
             </div>
           </div>
 
           <p v-if="error" class="error-text">{{ error }}</p>
           <div class="form-actions">
-            <button type="submit" class="btn btn-primary" :disabled="loading">
+            <BaseButton type="submit" :loading="loading">
               {{ loading ? 'Saving...' : 'Save Question' }}
-            </button>
+            </BaseButton>
           </div>
         </form>
-      </div>
+      </BaseCard>
 
       <!-- Questions list -->
-      <div v-if="questions.length === 0" class="text-muted">No questions yet.</div>
+      <p v-if="questions.length === 0" class="text-muted">No questions yet.</p>
       <div class="question-list">
-        <div v-for="q in questions" :key="q.id" class="card question-card">
+        <BaseCard v-for="q in questions" :key="q.id" class="question-card">
           <div class="question-info">
             <p class="question-type">{{ q.type }}</p>
             <p>{{ q.text }}</p>
             <ul v-if="q.options.length" class="options-list">
-              <li
-                v-for="opt in q.options"
-                :key="opt.id"
-                :class="{ correct: opt.isCorrect }"
-              >
+              <li v-for="opt in q.options" :key="opt.id" :class="{ correct: opt.isCorrect }">
                 {{ opt.text }}
               </li>
             </ul>
           </div>
-          <button class="btn btn-danger" @click="handleDeleteQuestion(q.id)">Delete</button>
-        </div>
+          <BaseButton variant="danger" @click="handleDeleteQuestion(q.id)">Delete</BaseButton>
+        </BaseCard>
       </div>
     </div>
   </div>

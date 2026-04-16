@@ -19,18 +19,6 @@ const router = createRouter({
       meta: { public: true },
     },
     {
-      path: '/dashboard',
-      component: () => import('@/views/dashboard/DashboardView.vue'),
-    },
-    {
-      path: '/assessments/:id',
-      component: () => import('@/views/assessment/AssessmentView.vue'),
-    },
-    {
-      path: '/assessments/:id/results',
-      component: () => import('@/views/results/ResultsView.vue'),
-    },
-    {
       path: '/candidate/:token',
       name: 'candidate-session',
       component: () => import('@/views/candidate/CandidateSessionView.vue'),
@@ -41,6 +29,24 @@ const router = createRouter({
       name: 'candidate-complete',
       component: () => import('@/views/candidate/CandidateCompleteView.vue'),
       meta: { public: true },
+    },
+    {
+      path: '/',
+      component: () => import('@/components/AppLayout.vue'),
+      children: [
+        {
+          path: 'dashboard',
+          component: () => import('@/views/dashboard/DashboardView.vue'),
+        },
+        {
+          path: 'assessments/:id',
+          component: () => import('@/views/assessment/AssessmentView.vue'),
+        },
+        {
+          path: 'assessments/:id/results',
+          component: () => import('@/views/results/ResultsView.vue'),
+        },
+      ],
     },
   ],
 })
