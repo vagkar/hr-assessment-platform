@@ -16,6 +16,23 @@ defineProps({
     :disabled="disabled || loading"
     v-bind="$attrs"
   >
+    <span v-if="loading" class="spinner" />
     <slot />
   </button>
 </template>
+
+<style scoped>
+.spinner {
+  width: 0.875rem;
+  height: 0.875rem;
+  border: 2px solid currentColor;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+  flex-shrink: 0;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+</style>
