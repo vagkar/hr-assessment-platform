@@ -94,6 +94,9 @@ async function handleInvite() {
           <p class="text-muted">{{ assessment.durationMinutes }} min</p>
         </div>
         <div class="header-actions">
+          <button class="btn btn-outline" @click="router.push(`/assessments/${assessmentId}/results`)">
+            Results
+          </button>
           <button class="btn btn-outline" @click="showInviteForm = !showInviteForm">
             {{ showInviteForm ? 'Cancel' : 'Send Invite' }}
           </button>

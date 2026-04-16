@@ -27,6 +27,10 @@ const router = createRouter({
       component: () => import('@/views/assessment/AssessmentView.vue'),
     },
     {
+      path: '/assessments/:id/results',
+      component: () => import('@/views/results/ResultsView.vue'),
+    },
+    {
       path: '/candidate/:token',
       name: 'candidate-session',
       component: () => import('@/views/candidate/CandidateSessionView.vue'),
