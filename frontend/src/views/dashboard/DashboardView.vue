@@ -1,12 +1,12 @@
 <script setup>
 import { ref, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
 import { useAssessmentStore } from '@/stores/assessment'
 import BaseButton from '@/components/BaseButton.vue'
 import BaseCard from '@/components/BaseCard.vue'
+import BaseInput from '@/components/BaseInput.vue'
 import FormGroup from '@/components/FormGroup.vue'
+import AssessmentCard from '@/components/AssessmentCard.vue'
 
-const router = useRouter()
 const assessmentStore = useAssessmentStore()
 
 const showForm = ref(false)
@@ -66,53 +66,51 @@ async function handleDelete(id) {
 <template>
   <div>
     <header class="dashboard-header">
-      <h1>Assessments</h1>
+      <div>
+        <h1>Assessments</h1>
+        <p class="text-muted">Manage your assessments and track candidate results.</p>
+      </div>
       <BaseButton @click="showForm ? cancelForm() : openCreate()">
         {{ showForm ? 'Cancel' : '+ New Assessment' }}
       </BaseButton>
     </header>
 
-    <BaseCard v-if="showForm" style="margin-bottom: 1.5rem">
-      <h2>{{ editingId ? 'Edit Assessment' : 'New Assessment' }}</h2>
+    <BaseCard v-if="showForm" class="form-card">
+      <h2 class="form-title">{{ editingId ? 'Edit Assessment' : 'New Assessment' }}</h2>
       <form @submit.prevent="handleSubmit">
         <FormGroup label="Title">
-          <input v-model="form.title" type="text" required />
+          <BaseInput v-model="form.title" placeholder="e.g. Frontend Developer Assessment" required />
         </FormGroup>
         <FormGroup label="Description">
-          <textarea v-model="form.description" rows="3" />
+          <BaseInput v-model="form.description" :rows="2" placeholder="Optional description..." />
         </FormGroup>
         <FormGroup label="Duration (minutes)">
-          <input v-model.number="form.durationMinutes" type="number" min="1" required />
+          <BaseInput v-model="form.durationMinutes" type="number" min="1" style="max-width: 160px" required />
         </FormGroup>
         <p v-if="error" class="error-text">{{ error }}</p>
         <div class="form-actions">
+          <BaseButton variant="outline" type="button" @click="cancelForm">Cancel</BaseButton>
           <BaseButton type="submit" :loading="loading">
-            {{ loading ? 'Saving...' : editingId ? 'Save Changes' : 'Create' }}
+            {{ editingId ? 'Save Changes' : 'Create' }}
           </BaseButton>
         </div>
       </form>
     </BaseCard>
 
-    <p v-if="assessmentStore.assessments.length === 0" class="text-muted">No assessments yet.</p>
+    <div v-if="assessmentStore.assessments.length === 0 && !showForm" class="empty-state">
+      <div class="empty-icon">🗂️</div>
+      <p class="empty-title">No assessments yet</p>
+      <p class="text-muted">Create your first assessment to start evaluating candidates.</p>
+      <BaseButton style="margin-top: var(--space-md)" @click="openCreate">+ New Assessment</BaseButton>
+    </div>
 
-    <div class="assessment-list">
-      <BaseCard
-        v-for="assessment in assessmentStore.assessments"
-        :key="assessment.id"
-        class="assessment-card"
-      >
-        <div class="assessment-info">
-          <h2>{{ assessment.title }}</h2>
-          <p class="text-muted">{{ assessment.durationMinutes }} min</p>
-          <p v-if="assessment.description" class="text-muted">{{ assessment.description }}</p>
-        </div>
-        <div class="assessment-actions">
-          <BaseButton variant="outline" @click="router.push(`/assessments/${assessment.id}`)">
-            Open
-          </BaseButton>
-          <BaseButton variant="outline" @click="openEdit(assessment)">Edit</BaseButton>
-          <BaseButton variant="danger" @click="handleDelete(assessment.id)">Delete</BaseButton>
-        </div>
+    <div v-else class="assessment-list">
+      <BaseCard v-for="assessment in assessmentStore.assessments" :key="assessment.id">
+        <AssessmentCard
+          :assessment="assessment"
+          @edit="openEdit"
+          @delete="handleDelete"
+        />
       </BaseCard>
     </div>
   </div>
@@ -122,25 +120,27 @@ async function handleDelete(id) {
 .dashboard-header {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
   margin-bottom: var(--space-xl);
+  gap: var(--space-md);
 }
+
+.dashboard-header h1 { margin-bottom: var(--space-xs); }
+
+.form-card { margin-bottom: var(--space-lg); }
+.form-title { margin-bottom: var(--space-lg); }
 
 .assessment-list {
   display: flex;
   flex-direction: column;
-  gap: var(--space-md);
-}
-
-.assessment-card {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.assessment-actions {
-  display: flex;
   gap: var(--space-sm);
-  flex-shrink: 0;
 }
+
+.empty-state {
+  text-align: center;
+  padding: var(--space-xl) var(--space-md);
+  color: var(--color-text-muted);
+}
+.empty-icon { font-size: 2.5rem; margin-bottom: var(--space-md); }
+.empty-title { font-size: 1rem; font-weight: 600; color: var(--color-text); margin-bottom: var(--space-xs); }
 </style>

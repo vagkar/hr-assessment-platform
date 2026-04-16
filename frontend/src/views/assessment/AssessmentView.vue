@@ -6,7 +6,9 @@ import { getQuestions, createQuestion, updateQuestion, deleteQuestion } from '@/
 import { createInvite } from '@/api/assessments'
 import BaseButton from '@/components/BaseButton.vue'
 import BaseCard from '@/components/BaseCard.vue'
+import BaseInput from '@/components/BaseInput.vue'
 import FormGroup from '@/components/FormGroup.vue'
+import QuestionCard from '@/components/QuestionCard.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -24,9 +26,12 @@ const newOption = ref({ text: '', isCorrect: false })
 const showInviteForm = ref(false)
 const inviteForm = ref({ candidateName: '', candidateEmail: '' })
 const inviteResult = ref(null)
+const copied = ref(false)
 
 const error = ref(null)
 const loading = ref(false)
+
+const appUrl = import.meta.env.VITE_APP_URL
 
 onMounted(async () => {
   assessment.value = assessmentStore.assessments.find((a) => a.id === assessmentId)
@@ -104,19 +109,27 @@ async function handleInvite() {
     loading.value = false
   }
 }
+
+async function copyInviteLink() {
+  const link = `${appUrl}/candidate/${inviteResult.value.inviteToken}`
+  await navigator.clipboard.writeText(link)
+  copied.value = true
+  setTimeout(() => (copied.value = false), 2000)
+}
 </script>
 
 <template>
   <div>
-    <BaseButton variant="outline" style="margin-bottom: 1rem" @click="router.push('/dashboard')">
-      ← Back
-    </BaseButton>
+    <button class="back-link" @click="router.push('/dashboard')">← Back to Assessments</button>
 
     <div v-if="assessment">
       <header class="assessment-header">
-        <div>
+        <div class="header-info">
           <h1>{{ assessment.title }}</h1>
-          <p class="text-muted">{{ assessment.durationMinutes }} min</p>
+          <div class="header-meta">
+            <span class="meta-chip">{{ assessment.durationMinutes }} min</span>
+            <span class="meta-chip">{{ questions.length }} question{{ questions.length !== 1 ? 's' : '' }}</span>
+          </div>
         </div>
         <div class="header-actions">
           <BaseButton variant="outline" @click="router.push(`/assessments/${assessmentId}/results`)">
@@ -132,59 +145,74 @@ async function handleInvite() {
       </header>
 
       <!-- Invite form -->
-      <BaseCard v-if="showInviteForm" style="margin-bottom: 1.5rem">
-        <h2>Send Invite</h2>
+      <BaseCard v-if="showInviteForm" class="form-card">
+        <h2 class="form-title">Send Invite</h2>
+        <p class="form-subtitle">The candidate will receive a unique link to take this assessment.</p>
         <form @submit.prevent="handleInvite">
-          <FormGroup label="Candidate Name">
-            <input v-model="inviteForm.candidateName" type="text" required />
-          </FormGroup>
-          <FormGroup label="Candidate Email">
-            <input v-model="inviteForm.candidateEmail" type="email" required />
-          </FormGroup>
+          <div class="form-row">
+            <FormGroup label="Candidate Name">
+              <BaseInput v-model="inviteForm.candidateName" placeholder="Jane Doe" required />
+            </FormGroup>
+            <FormGroup label="Candidate Email">
+              <BaseInput v-model="inviteForm.candidateEmail" type="email" placeholder="jane@example.com" required />
+            </FormGroup>
+          </div>
           <div class="form-actions">
-            <BaseButton type="submit" :loading="loading">
-              {{ loading ? 'Sending...' : 'Send' }}
-            </BaseButton>
+            <BaseButton type="submit" :loading="loading">Send Invite</BaseButton>
           </div>
         </form>
       </BaseCard>
 
       <!-- Invite result -->
-      <BaseCard v-if="inviteResult" class="invite-result" style="margin-bottom: 1.5rem">
-        <p><strong>Invite created!</strong> Share this link with the candidate:</p>
-        <code>{{ `http://localhost:5173/candidate/${inviteResult.inviteToken}` }}</code>
-        <BaseButton variant="outline" style="margin-top: 0.5rem" @click="inviteResult = null">Dismiss</BaseButton>
-      </BaseCard>
+      <div v-if="inviteResult" class="invite-banner">
+        <div class="invite-banner-content">
+          <span class="invite-banner-icon">✓</span>
+          <div class="invite-banner-text">
+            <strong>Invite created!</strong>
+            <span class="invite-link">{{ `${appUrl}/candidate/${inviteResult.inviteToken}` }}</span>
+          </div>
+        </div>
+        <div class="invite-banner-actions">
+          <BaseButton variant="outline" @click="copyInviteLink">
+            {{ copied ? '✓ Copied' : 'Copy Link' }}
+          </BaseButton>
+          <BaseButton variant="outline" @click="inviteResult = null">Dismiss</BaseButton>
+        </div>
+      </div>
 
       <!-- Question form -->
-      <BaseCard v-if="showQuestionForm" style="margin-bottom: 1.5rem">
-        <h2>{{ editingQuestionId ? 'Edit Question' : 'New Question' }}</h2>
+      <BaseCard v-if="showQuestionForm" class="form-card">
+        <h2 class="form-title">{{ editingQuestionId ? 'Edit Question' : 'New Question' }}</h2>
         <form @submit.prevent="handleSubmitQuestion">
           <FormGroup label="Question Text">
-            <textarea v-model="questionForm.text" rows="2" required />
+            <BaseInput v-model="questionForm.text" :rows="3" placeholder="Enter your question..." required />
           </FormGroup>
-          <FormGroup label="Type">
-            <select v-model="questionForm.type">
-              <option value="MULTIPLE_CHOICE">Multiple Choice</option>
-              <option value="TRUE_FALSE">True / False</option>
-              <option value="OPEN_TEXT">Open Text</option>
-            </select>
-          </FormGroup>
-          <FormGroup label="Order">
-            <input v-model.number="questionForm.orderIndex" type="number" min="1" required />
-          </FormGroup>
+          <div class="form-row">
+            <FormGroup label="Type">
+              <select v-model="questionForm.type">
+                <option value="MULTIPLE_CHOICE">Multiple Choice</option>
+                <option value="TRUE_FALSE">True / False</option>
+                <option value="OPEN_TEXT">Open Text</option>
+              </select>
+            </FormGroup>
+            <FormGroup label="Order">
+              <BaseInput v-model="questionForm.orderIndex" type="number" min="1" required />
+            </FormGroup>
+          </div>
 
-          <div v-if="questionForm.type !== 'OPEN_TEXT'">
-            <label>Options</label>
-            <div v-for="(opt, i) in questionForm.options" :key="i" class="option-row">
-              <span>{{ opt.text }}</span>
-              <span :class="opt.isCorrect ? 'correct' : 'wrong'">
-                {{ opt.isCorrect ? 'Correct' : 'Wrong' }}
-              </span>
-              <BaseButton type="button" variant="outline" @click="removeOption(i)">Remove</BaseButton>
+          <div v-if="questionForm.type !== 'OPEN_TEXT'" class="options-section">
+            <p class="options-label">Answer Options</p>
+            <div v-if="questionForm.options.length" class="options-list">
+              <div v-for="(opt, i) in questionForm.options" :key="i" class="option-row">
+                <span class="option-text">{{ opt.text }}</span>
+                <span :class="['option-badge', opt.isCorrect ? 'badge-correct' : 'badge-wrong']">
+                  {{ opt.isCorrect ? 'Correct' : 'Wrong' }}
+                </span>
+                <button type="button" class="remove-btn" @click="removeOption(i)" title="Remove">✕</button>
+              </div>
             </div>
             <div class="option-add">
-              <input v-model="newOption.text" type="text" placeholder="Option text" />
+              <BaseInput v-model="newOption.text" placeholder="Add an option..." />
               <label class="checkbox-label">
                 <input v-model="newOption.isCorrect" type="checkbox" />
                 Correct
@@ -195,28 +223,27 @@ async function handleInvite() {
 
           <p v-if="error" class="error-text">{{ error }}</p>
           <div class="form-actions">
+            <BaseButton variant="outline" type="button" @click="cancelQuestionForm">Cancel</BaseButton>
             <BaseButton type="submit" :loading="loading">
-              {{ loading ? 'Saving...' : editingQuestionId ? 'Save Changes' : 'Save Question' }}
+              {{ editingQuestionId ? 'Save Changes' : 'Save Question' }}
             </BaseButton>
           </div>
         </form>
       </BaseCard>
 
       <!-- Questions list -->
-      <p v-if="questions.length === 0" class="text-muted">No questions yet.</p>
-      <div class="question-list">
-        <BaseCard v-for="q in questions" :key="q.id" class="question-card">
-          <div class="question-info">
-            <p class="question-type">{{ q.type }}</p>
-            <p>{{ q.text }}</p>
-            <ul v-if="q.options.length" class="options-list">
-              <li v-for="opt in q.options" :key="opt.id" :class="{ correct: opt.isCorrect }">
-                {{ opt.text }}
-              </li>
-            </ul>
-          </div>
-          <BaseButton variant="outline" @click="openEditQuestion(q)">Edit</BaseButton>
-          <BaseButton variant="danger" @click="handleDeleteQuestion(q.id)">Delete</BaseButton>
+      <div v-if="questions.length === 0 && !showQuestionForm" class="empty-state">
+        <div class="empty-icon">📝</div>
+        <p class="empty-title">No questions yet</p>
+        <p class="text-muted">Add your first question to get started.</p>
+      </div>
+      <div v-else class="question-list">
+        <BaseCard v-for="q in questions" :key="q.id" class="question-item">
+          <QuestionCard
+            :question="q"
+            @edit="openEditQuestion"
+            @delete="handleDeleteQuestion"
+          />
         </BaseCard>
       </div>
     </div>
@@ -224,91 +251,216 @@ async function handleInvite() {
 </template>
 
 <style scoped>
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
+  background: none;
+  border: none;
+  color: var(--color-text-muted);
+  font-size: 0.875rem;
+  cursor: pointer;
+  padding: 0;
+  margin-bottom: var(--space-lg);
+  transition: color var(--transition);
+}
+.back-link:hover { color: var(--color-text); }
+
 .assessment-header {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
   margin-bottom: var(--space-xl);
+  gap: var(--space-md);
+}
+
+.header-info h1 { margin-bottom: var(--space-xs); }
+
+.header-meta {
+  display: flex;
+  gap: var(--space-sm);
+  margin-top: var(--space-xs);
+}
+
+.meta-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.2rem 0.6rem;
+  background: var(--color-bg-hover);
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  font-size: 0.8125rem;
+  color: var(--color-text-muted);
+  font-weight: 500;
 }
 
 .header-actions {
   display: flex;
   gap: var(--space-sm);
+  flex-shrink: 0;
 }
 
-.question-list {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-md);
-}
+/* Forms */
+.form-card { margin-bottom: var(--space-lg); }
 
-.question-card {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: var(--space-md);
-}
-
-.question-type {
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: var(--color-primary);
-  text-transform: uppercase;
+.form-title {
   margin-bottom: var(--space-xs);
 }
 
-.options-list {
-  margin-top: var(--space-sm);
-  padding-left: var(--space-md);
-  list-style: disc;
+.form-subtitle {
+  color: var(--color-text-muted);
+  font-size: 0.875rem;
+  margin-bottom: var(--space-lg);
 }
 
-.options-list li.correct {
-  color: var(--color-success);
-  font-weight: 500;
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-md);
+}
+
+/* Invite banner */
+.invite-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-md);
+  padding: var(--space-md) var(--space-lg);
+  background: color-mix(in srgb, var(--color-success) 10%, var(--color-bg-card));
+  border: 1px solid color-mix(in srgb, var(--color-success) 30%, transparent);
+  border-radius: var(--radius);
+  margin-bottom: var(--space-lg);
+}
+
+.invite-banner-content {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  min-width: 0;
+}
+
+.invite-banner-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  background: var(--color-success);
+  color: #fff;
+  border-radius: 50%;
+  font-size: 0.875rem;
+  flex-shrink: 0;
+}
+
+.invite-banner-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+  min-width: 0;
+}
+
+.invite-link {
+  font-size: 0.8125rem;
+  color: var(--color-text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.invite-banner-actions {
+  display: flex;
+  gap: var(--space-sm);
+  flex-shrink: 0;
+}
+
+/* Options */
+.options-section { margin-top: var(--space-md); }
+
+.options-label {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  margin-bottom: var(--space-sm);
+}
+
+.options-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  margin-bottom: var(--space-sm);
 }
 
 .option-row {
   display: flex;
   align-items: center;
   gap: var(--space-sm);
-  margin-bottom: var(--space-xs);
+  padding: var(--space-sm) var(--space-md);
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
 }
+
+.option-text { flex: 1; font-size: 0.9375rem; }
+
+.option-badge {
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.125rem 0.5rem;
+  border-radius: 999px;
+}
+
+.badge-correct { background: color-mix(in srgb, var(--color-success) 15%, transparent); color: var(--color-success); }
+.badge-wrong   { background: var(--color-bg-hover); color: var(--color-text-muted); }
+
+.remove-btn {
+  background: none;
+  border: none;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  font-size: 0.75rem;
+  padding: 0.25rem;
+  border-radius: var(--radius-sm);
+  transition: color var(--transition), background var(--transition);
+  line-height: 1;
+}
+.remove-btn:hover { color: var(--color-danger); background: color-mix(in srgb, var(--color-danger) 10%, transparent); }
 
 .option-add {
   display: flex;
   align-items: center;
   gap: var(--space-sm);
-  margin-top: var(--space-sm);
 }
-
-.option-add input[type="text"] {
-  flex: 1;
-}
+.option-add input[type="text"] { flex: 1; }
 
 .checkbox-label {
   display: flex;
   align-items: center;
   gap: var(--space-xs);
   white-space: nowrap;
-}
-
-.correct { color: var(--color-success); }
-.wrong { color: var(--color-text-muted); }
-
-.invite-result {
-  margin-bottom: var(--space-lg);
-  background: #f0fdf4;
-  border: 1px solid #bbf7d0;
-}
-
-.invite-result code {
-  display: block;
-  margin-top: var(--space-sm);
-  padding: var(--space-sm);
-  background: white;
-  border-radius: var(--radius);
   font-size: 0.875rem;
-  word-break: break-all;
+  font-weight: 500;
+  color: var(--color-text);
+  text-transform: none;
+  letter-spacing: 0;
 }
+
+/* Questions list */
+.question-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.question-item { padding: var(--space-lg); }
+
+/* Empty state */
+.empty-state {
+  text-align: center;
+  padding: var(--space-xl) var(--space-md);
+  color: var(--color-text-muted);
+}
+.empty-icon { font-size: 2.5rem; margin-bottom: var(--space-md); }
+.empty-title { font-size: 1rem; font-weight: 600; color: var(--color-text); margin-bottom: var(--space-xs); }
 </style>
