@@ -127,8 +127,8 @@ async function copyInviteLink() {
         <div class="header-info">
           <h1>{{ assessment.title }}</h1>
           <div class="header-meta">
-            <span class="meta-chip">{{ assessment.durationMinutes }} min</span>
-            <span class="meta-chip">{{ questions.length }} question{{ questions.length !== 1 ? 's' : '' }}</span>
+            <span class="chip">{{ assessment.durationMinutes }} min</span>
+            <span class="chip">{{ questions.length }} question{{ questions.length !== 1 ? 's' : '' }}</span>
           </div>
         </div>
         <div class="header-actions">
@@ -251,21 +251,6 @@ async function copyInviteLink() {
 </template>
 
 <style scoped>
-.back-link {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-xs);
-  background: none;
-  border: none;
-  color: var(--color-text-muted);
-  font-size: 0.875rem;
-  cursor: pointer;
-  padding: 0;
-  margin-bottom: var(--space-lg);
-  transition: color var(--transition);
-}
-.back-link:hover { color: var(--color-text); }
-
 .assessment-header {
   display: flex;
   justify-content: space-between;
@@ -282,18 +267,6 @@ async function copyInviteLink() {
   margin-top: var(--space-xs);
 }
 
-.meta-chip {
-  display: inline-flex;
-  align-items: center;
-  padding: 0.2rem 0.6rem;
-  background: var(--color-bg-hover);
-  border: 1px solid var(--color-border);
-  border-radius: 999px;
-  font-size: 0.8125rem;
-  color: var(--color-text-muted);
-  font-weight: 500;
-}
-
 .header-actions {
   display: flex;
   gap: var(--space-sm);
@@ -301,23 +274,7 @@ async function copyInviteLink() {
 }
 
 /* Forms */
-.form-card { margin-bottom: var(--space-lg); }
-
-.form-title {
-  margin-bottom: var(--space-xs);
-}
-
-.form-subtitle {
-  color: var(--color-text-muted);
-  font-size: 0.875rem;
-  margin-bottom: var(--space-lg);
-}
-
-.form-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: var(--space-md);
-}
+.form-title { margin-bottom: var(--space-xs); }
 
 /* Invite banner */
 .invite-banner {
@@ -455,12 +412,4 @@ async function copyInviteLink() {
 
 .question-item { padding: var(--space-lg); }
 
-/* Empty state */
-.empty-state {
-  text-align: center;
-  padding: var(--space-xl) var(--space-md);
-  color: var(--color-text-muted);
-}
-.empty-icon { font-size: 2.5rem; margin-bottom: var(--space-md); }
-.empty-title { font-size: 1rem; font-weight: 600; color: var(--color-text); margin-bottom: var(--space-xs); }
 </style>

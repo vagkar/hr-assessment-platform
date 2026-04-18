@@ -2,6 +2,7 @@
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { useThemeStore } from '@/stores/theme'
+import BrandLogo from '@/components/BrandLogo.vue'
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -17,8 +18,7 @@ function logout() {
   <div class="layout">
     <nav class="navbar">
       <RouterLink to="/dashboard" class="navbar-brand">
-        <span class="brand-icon">HR</span>
-        Platform
+        <BrandLogo />
       </RouterLink>
       <div class="navbar-actions">
         <span class="user-email">{{ authStore.user?.email }}</span>
@@ -53,30 +53,7 @@ function logout() {
   backdrop-filter: blur(8px);
 }
 
-.navbar-brand {
-  display: flex;
-  align-items: center;
-  gap: var(--space-sm);
-  font-weight: 700;
-  font-size: 1rem;
-  color: var(--color-text);
-  text-decoration: none;
-  letter-spacing: -0.01em;
-}
-
-.brand-icon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 28px;
-  height: 28px;
-  background: var(--color-primary);
-  color: #fff;
-  border-radius: 6px;
-  font-size: 0.75rem;
-  font-weight: 700;
-  letter-spacing: 0;
-}
+.navbar-brand { text-decoration: none; }
 
 .navbar-actions {
   display: flex;

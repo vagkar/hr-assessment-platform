@@ -85,7 +85,7 @@ async function handleDelete(id) {
           <BaseInput v-model="form.description" :rows="2" placeholder="Optional description..." />
         </FormGroup>
         <FormGroup label="Duration (minutes)">
-          <BaseInput v-model="form.durationMinutes" type="number" min="1" style="max-width: 160px" required />
+          <BaseInput v-model="form.durationMinutes" type="number" min="1" class="duration-input" required />
         </FormGroup>
         <p v-if="error" class="error-text">{{ error }}</p>
         <div class="form-actions">
@@ -101,7 +101,7 @@ async function handleDelete(id) {
       <div class="empty-icon">🗂️</div>
       <p class="empty-title">No assessments yet</p>
       <p class="text-muted">Create your first assessment to start evaluating candidates.</p>
-      <BaseButton style="margin-top: var(--space-md)" @click="openCreate">+ New Assessment</BaseButton>
+      <BaseButton class="empty-action" @click="openCreate">+ New Assessment</BaseButton>
     </div>
 
     <div v-else class="assessment-list">
@@ -127,20 +127,11 @@ async function handleDelete(id) {
 
 .dashboard-header h1 { margin-bottom: var(--space-xs); }
 
-.form-card { margin-bottom: var(--space-lg); }
-.form-title { margin-bottom: var(--space-lg); }
-
 .assessment-list {
   display: flex;
   flex-direction: column;
   gap: var(--space-sm);
 }
 
-.empty-state {
-  text-align: center;
-  padding: var(--space-xl) var(--space-md);
-  color: var(--color-text-muted);
-}
-.empty-icon { font-size: 2.5rem; margin-bottom: var(--space-md); }
-.empty-title { font-size: 1rem; font-weight: 600; color: var(--color-text); margin-bottom: var(--space-xs); }
+.duration-input { max-width: 160px; }
 </style>

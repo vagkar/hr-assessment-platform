@@ -41,11 +41,9 @@ function scoreColor(score) {
 
 <template>
   <div>
-    <BaseButton variant="outline" style="margin-bottom: 1rem" @click="router.push(`/assessments/${assessmentId}`)">
-      ← Back
-    </BaseButton>
+    <button class="back-link" @click="router.push(`/assessments/${assessmentId}`)">← Back to Assessment</button>
 
-    <h1 style="margin-bottom: 1.5rem">Results</h1>
+    <h1 class="page-title">Results</h1>
 
     <p v-if="error" class="error-text">{{ error }}</p>
     <p v-if="results.length === 0 && !error" class="text-muted">No results yet.</p>
@@ -125,6 +123,8 @@ function scoreColor(score) {
 </template>
 
 <style scoped>
+.page-title { margin-bottom: var(--space-lg); }
+
 .results-table {
   width: 100%;
   border-collapse: collapse;
@@ -150,9 +150,9 @@ function scoreColor(score) {
   font-weight: 600;
 }
 
-.score-high { background: #dcfce7; color: #15803d; }
-.score-mid  { background: #fef9c3; color: #a16207; }
-.score-low  { background: #fee2e2; color: #b91c1c; }
+.score-high { background: color-mix(in srgb, var(--color-success) 15%, transparent); color: var(--color-success); }
+.score-mid  { background: color-mix(in srgb, var(--color-warning) 15%, transparent); color: var(--color-warning); }
+.score-low  { background: color-mix(in srgb, var(--color-danger)  15%, transparent); color: var(--color-danger); }
 
 .score-large {
   font-size: 1.5rem;
@@ -184,9 +184,9 @@ function scoreColor(score) {
   border-left: 4px solid var(--color-border);
 }
 
-.answer-card.correct   { border-left-color: var(--color-success); background: #f0fdf4; }
-.answer-card.incorrect { border-left-color: var(--color-danger);  background: #fef2f2; }
-.answer-card.open      { border-left-color: var(--color-primary); background: #eff6ff; }
+.answer-card.correct   { border-left-color: var(--color-success); background: color-mix(in srgb, var(--color-success) 8%, var(--color-bg-card)); }
+.answer-card.incorrect { border-left-color: var(--color-danger);  background: color-mix(in srgb, var(--color-danger)  8%, var(--color-bg-card)); }
+.answer-card.open      { border-left-color: var(--color-primary); background: color-mix(in srgb, var(--color-primary) 8%, var(--color-bg-card)); }
 
 .question-number {
   font-size: 0.75rem;

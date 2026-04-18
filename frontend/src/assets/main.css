@@ -163,6 +163,8 @@ button:disabled, .btn:disabled {
   border-color: var(--color-text-muted);
 }
 
+.btn-block { width: 100%; }
+
 /* ── Layout ─────────────────────────────────────────────── */
 .page {
   max-width: 960px;
@@ -192,6 +194,129 @@ button:disabled, .btn:disabled {
   gap: var(--space-sm);
   margin-top: var(--space-lg);
 }
+
+/* ── Utilities ──────────────────────────────────────────── */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.2rem 0.7rem;
+  background: var(--color-bg-hover);
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  font-size: 0.8125rem;
+  color: var(--color-text-muted);
+  font-weight: 500;
+}
+
+.spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid var(--color-border);
+  border-top-color: var(--color-primary);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── Auth layout ────────────────────────────────────────── */
+.auth-page {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  padding: var(--space-md);
+}
+
+.auth-card {
+  width: 100%;
+  max-width: 420px;
+}
+
+.auth-brand   { margin-bottom: var(--space-xl); }
+.submit-btn   { margin-top: var(--space-sm); }
+
+.auth-subtitle {
+  color: var(--color-text-muted);
+  font-size: 0.9375rem;
+  margin-bottom: var(--space-xl);
+}
+
+.auth-footer {
+  text-align: center;
+  margin-top: var(--space-lg);
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
+}
+
+/* ── Empty state ────────────────────────────────────────── */
+.empty-state {
+  text-align: center;
+  padding: var(--space-xl) var(--space-md);
+}
+
+.empty-icon   { font-size: 2.5rem; margin-bottom: var(--space-md); }
+.empty-action { margin-top: var(--space-md); }
+
+.empty-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-text);
+  margin-bottom: var(--space-xs);
+}
+
+/* ── Form card ──────────────────────────────────────────── */
+.form-card     { margin-bottom: var(--space-lg); }
+.form-title    { margin-bottom: var(--space-lg); }
+
+.form-subtitle {
+  color: var(--color-text-muted);
+  font-size: 0.875rem;
+  margin-bottom: var(--space-lg);
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-md);
+}
+
+/* ── Section label ──────────────────────────────────────── */
+.section-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-text-muted);
+  margin-bottom: var(--space-sm);
+  margin-top: var(--space-lg);
+}
+.section-label:first-of-type { margin-top: 0; }
+
+/* ── Back link ──────────────────────────────────────────── */
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
+  background: none;
+  border: none;
+  color: var(--color-text-muted);
+  font-size: 0.875rem;
+  font-family: inherit;
+  cursor: pointer;
+  padding: 0;
+  margin-bottom: var(--space-lg);
+  transition: color var(--transition);
+}
+.back-link:hover { color: var(--color-text); }
 
 /* ── Feedback ───────────────────────────────────────────── */
 .error-text {

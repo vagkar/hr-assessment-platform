@@ -7,12 +7,13 @@ defineProps({
   },
   loading: { type: Boolean, default: false },
   disabled: { type: Boolean, default: false },
+  block: { type: Boolean, default: false },
 })
 </script>
 
 <template>
   <button
-    :class="['btn', `btn-${variant}`]"
+    :class="['btn', `btn-${variant}`, { 'btn-block': block }]"
     :disabled="disabled || loading"
     v-bind="$attrs"
   >
