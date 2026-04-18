@@ -318,6 +318,25 @@ button:disabled, .btn:disabled {
 }
 .back-link:hover { color: var(--color-text); }
 
+/* ── Mobile ─────────────────────────────────────────────── */
+@media (max-width: 640px) {
+  .page {
+    padding: var(--space-lg) var(--space-md);
+  }
+
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+
+  .form-actions {
+    flex-direction: column-reverse;
+  }
+
+  .auth-card {
+    max-width: 100%;
+  }
+}
+
 /* ── Feedback ───────────────────────────────────────────── */
 .error-text {
   color: var(--color-danger);

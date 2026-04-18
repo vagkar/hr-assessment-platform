@@ -72,4 +72,14 @@ function logout() {
   font-size: 0.9375rem;
   line-height: 1;
 }
+
+@media (max-width: 640px) {
+  .navbar {
+    padding: 0 var(--space-md);
+  }
+
+  .user-email {
+    display: none;
+  }
+}
 </style>

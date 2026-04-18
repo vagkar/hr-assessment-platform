@@ -54,10 +54,16 @@ function openEditQuestion(q) {
   showQuestionForm.value = true
 }
 
+function resetQuestionForm() {
+  questionForm.value = { text: '', type: 'MULTIPLE_CHOICE', orderIndex: questions.value.length + 1, options: [] }
+  newOption.value = { text: '', isCorrect: false }
+}
+
 function cancelQuestionForm() {
   showQuestionForm.value = false
   editingQuestionId.value = null
   error.value = null
+  resetQuestionForm()
 }
 
 function addOption() {
@@ -80,7 +86,6 @@ async function handleSubmitQuestion() {
       await createQuestion(assessmentId, questionForm.value)
     }
     cancelQuestionForm()
-    questionForm.value = { text: '', type: 'MULTIPLE_CHOICE', orderIndex: questions.value.length + 1, options: [] }
     await loadQuestions()
   } catch (e) {
     error.value = e.response?.data?.message || 'Failed to save question'
@@ -138,7 +143,7 @@ async function copyInviteLink() {
           <BaseButton variant="outline" @click="showInviteForm = !showInviteForm">
             {{ showInviteForm ? 'Cancel' : 'Send Invite' }}
           </BaseButton>
-          <BaseButton @click="showQuestionForm ? cancelQuestionForm() : (showQuestionForm = true)">
+          <BaseButton @click="showQuestionForm ? cancelQuestionForm() : (resetQuestionForm(), showQuestionForm = true)">
             {{ showQuestionForm ? 'Cancel' : '+ Add Question' }}
           </BaseButton>
         </div>
@@ -412,4 +417,26 @@ async function copyInviteLink() {
 
 .question-item { padding: var(--space-lg); }
 
+@media (max-width: 640px) {
+  .assessment-header {
+    flex-direction: column;
+  }
+
+  .header-actions {
+    width: 100%;
+  }
+
+  .header-actions :deep(button) {
+    flex: 1;
+  }
+
+  .invite-banner {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .invite-banner-actions {
+    width: 100%;
+  }
+}
 </style>

@@ -50,6 +50,7 @@ function scoreColor(score) {
 
     <!-- Results table -->
     <BaseCard v-if="!selectedSession">
+      <div class="table-scroll">
       <table class="results-table">
         <thead>
           <tr>
@@ -63,24 +64,25 @@ function scoreColor(score) {
         </thead>
         <tbody>
           <tr v-for="r in results" :key="r.sessionId">
-            <td>{{ r.candidateName }}</td>
-            <td>{{ r.candidateEmail }}</td>
-            <td>{{ r.status }}</td>
-            <td>
+            <td data-label="Candidate">{{ r.candidateName }}</td>
+            <td data-label="Email">{{ r.candidateEmail }}</td>
+            <td data-label="Status">{{ r.status }}</td>
+            <td data-label="Score">
               <span v-if="r.score !== null" :class="['score-badge', scoreColor(r.score)]">
                 {{ r.score }}%
               </span>
               <span v-else class="text-muted">—</span>
             </td>
-            <td class="text-muted">
+            <td data-label="Completed" class="text-muted">
               {{ r.completedAt ? new Date(r.completedAt).toLocaleDateString() : '—' }}
             </td>
-            <td>
+            <td data-label="">
               <BaseButton variant="outline" @click="openDetail(r.sessionId)">View</BaseButton>
             </td>
           </tr>
         </tbody>
       </table>
+      </div>
     </BaseCard>
 
     <!-- Session detail -->
@@ -204,4 +206,62 @@ function scoreColor(score) {
 
 .correct-label   { color: var(--color-success); font-weight: 600; margin-top: var(--space-xs); }
 .incorrect-label { color: var(--color-danger);  font-weight: 600; margin-top: var(--space-xs); }
+
+.table-scroll { overflow-x: auto; }
+
+@media (max-width: 640px) {
+  .table-scroll { overflow-x: unset; }
+
+  .results-table thead {
+    display: none;
+  }
+
+  .results-table tr {
+    display: block;
+    padding: var(--space-md) 0;
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .results-table tr:last-child {
+    border-bottom: none;
+  }
+
+  .results-table td {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.25rem 0;
+    border-bottom: none;
+    font-size: 0.875rem;
+  }
+
+  .results-table td::before {
+    content: attr(data-label);
+    font-weight: 600;
+    font-size: 0.75rem;
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    flex-shrink: 0;
+    margin-right: var(--space-sm);
+  }
+
+  .results-table td[data-label=""] {
+    justify-content: flex-end;
+    margin-top: var(--space-xs);
+  }
+}
+
+@media (max-width: 640px) {
+  .detail-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-md);
+  }
+
+  .detail-score-area {
+    width: 100%;
+    justify-content: space-between;
+  }
+}
 </style>

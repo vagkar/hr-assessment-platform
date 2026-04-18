@@ -75,4 +75,18 @@ const router = useRouter()
   gap: var(--space-sm);
   flex-shrink: 0;
 }
+
+@media (max-width: 640px) {
+  .assessment-card {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .assessment-actions {
+    width: 100%;
+    justify-content: flex-end;
+    padding-top: var(--space-sm);
+    border-top: 1px solid var(--color-border);
+  }
+}
 </style>

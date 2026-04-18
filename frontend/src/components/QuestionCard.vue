@@ -96,4 +96,17 @@ defineEmits(['edit', 'delete'])
   gap: var(--space-sm);
   flex-shrink: 0;
 }
+
+@media (max-width: 640px) {
+  .question-card {
+    flex-direction: column;
+  }
+
+  .question-actions {
+    width: 100%;
+    justify-content: flex-end;
+    padding-top: var(--space-sm);
+    border-top: 1px solid var(--color-border);
+  }
+}
 </style>

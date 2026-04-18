@@ -134,4 +134,10 @@ async function handleDelete(id) {
 }
 
 .duration-input { max-width: 160px; }
+
+@media (max-width: 640px) {
+  .dashboard-header {
+    flex-direction: column;
+  }
+}
 </style>
