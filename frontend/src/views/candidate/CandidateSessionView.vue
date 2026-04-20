@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { getSession, startSession, submitAnswers } from '@/api/candidate'
 import BaseButton from '@/components/BaseButton.vue'
@@ -14,6 +14,25 @@ const session = ref(null)
 const answers = ref({})
 const error = ref(null)
 const loading = ref(false)
+
+const timeLeft = ref(0)
+let timerInterval = null
+
+const timeDisplay = computed(() => {
+  const t = timeLeft.value
+  const m = Math.floor(t / 60).toString().padStart(2, '0')
+  const s = (t % 60).toString().padStart(2, '0')
+  return `${m}:${s}`
+})
+
+const timerClass = computed(() => {
+  if (!session.value) return ''
+  const total = session.value.durationMinutes * 60
+  const ratio = timeLeft.value / total
+  if (ratio <= 0.10) return 'timer-urgent'
+  if (ratio <= 0.25) return 'timer-warning'
+  return ''
+})
 
 const answeredCount = computed(() => {
   if (!session.value) return 0
@@ -30,10 +49,26 @@ onMounted(async () => {
     const res = await getSession(token)
     session.value = res.data
     initAnswers()
+    if (session.value.status === 'IN_PROGRESS') startTimer()
   } catch {
     error.value = 'Session not found or the link has expired.'
   }
 })
+
+onUnmounted(() => clearInterval(timerInterval))
+
+function startTimer() {
+  const endTime = new Date(session.value.startedAt).getTime() + session.value.durationMinutes * 60 * 1000
+  const tick = () => {
+    timeLeft.value = Math.max(0, Math.floor((endTime - Date.now()) / 1000))
+    if (timeLeft.value === 0) {
+      clearInterval(timerInterval)
+      handleSubmit()
+    }
+  }
+  tick()
+  timerInterval = setInterval(tick, 1000)
+}
 
 function initAnswers() {
   session.value.questions.forEach((q) => {
@@ -46,6 +81,7 @@ async function handleStart() {
   try {
     const res = await startSession(token)
     session.value = res.data
+    startTimer()
   } catch (e) {
     error.value = e.response?.data?.message || 'Failed to start session'
   } finally {
@@ -113,11 +149,14 @@ async function handleSubmit() {
 
         <!-- IN_PROGRESS -->
         <form v-else-if="session.status === 'IN_PROGRESS'" @submit.prevent="handleSubmit">
-          <div class="progress-wrap">
-            <div class="progress-bar">
-              <div class="progress-fill" :style="{ width: `${(answeredCount / totalCount) * 100}%` }" />
+          <div class="timer-bar">
+            <div class="progress-wrap">
+              <div class="progress-bar">
+                <div class="progress-fill" :style="{ width: `${(answeredCount / totalCount) * 100}%` }" />
+              </div>
+              <span class="progress-count">{{ answeredCount }} / {{ totalCount }}</span>
             </div>
-            <span class="progress-count">{{ answeredCount }} / {{ totalCount }} answered</span>
+            <span :class="['timer', timerClass]">⏱ {{ timeDisplay }}</span>
           </div>
 
           <div v-for="(q, index) in session.questions" :key="q.id" class="card question-card">
@@ -195,11 +234,40 @@ async function handleSubmit() {
   gap: var(--space-sm);
 }
 
-.progress-wrap {
+.timer-bar {
   display: flex;
   align-items: center;
   gap: var(--space-md);
   margin-bottom: var(--space-lg);
+  position: sticky;
+  top: 68px;
+  background: var(--color-bg);
+  padding: var(--space-sm) 0;
+  z-index: 10;
+}
+
+.timer {
+  font-size: 0.9375rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  color: var(--color-text-muted);
+  flex-shrink: 0;
+}
+
+.timer-warning { color: var(--color-warning); }
+.timer-urgent  { color: var(--color-danger); animation: pulse 1s ease-in-out infinite; }
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.5; }
+}
+
+.progress-wrap {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  flex: 1;
 }
 
 .progress-bar {

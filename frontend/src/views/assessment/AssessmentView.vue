@@ -435,8 +435,18 @@ async function copyInviteLink() {
     align-items: flex-start;
   }
 
+  .invite-banner-content {
+    width: 100%;
+    min-width: 0;
+  }
+
   .invite-banner-actions {
     width: 100%;
+    justify-content: stretch;
+  }
+
+  .invite-banner-actions :deep(button) {
+    flex: 1;
   }
 }
 </style>

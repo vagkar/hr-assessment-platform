@@ -42,6 +42,7 @@ public class CandidateService {
                 assessment.getTitle(),
                 assessment.getDurationMinutes(),
                 session.getStatus(),
+                session.getStartedAt(),
                 questions
         );
     }
