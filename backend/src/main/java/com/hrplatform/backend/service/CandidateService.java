@@ -68,6 +68,13 @@ public class CandidateService {
             throw new BadRequestException("Session is not in progress");
         }
 
+        LocalDateTime deadline = session.getStartedAt()
+                .plusMinutes(session.getAssessment().getDurationMinutes())
+                .plusSeconds(30);
+        if (LocalDateTime.now().isAfter(deadline)) {
+            throw new BadRequestException("Time has expired");
+        }
+
         Long assessmentId = session.getAssessment().getId();
         int correct = 0;
         int scoreable = 0;
