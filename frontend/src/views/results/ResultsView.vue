@@ -36,9 +36,9 @@ function statusTag(status) {
   return ''
 }
 
-function answerClass(isCorrect) {
-  if (isCorrect === true) return 'is-correct'
-  if (isCorrect === false) return 'is-incorrect'
+function answerClass(a) {
+  if (a.isCorrect === true) return 'is-correct'
+  if (a.isCorrect === false && (a.selectedOptionId || a.openTextAnswer)) return 'is-incorrect'
   return 'is-open'
 }
 </script>
@@ -80,7 +80,7 @@ function answerClass(isCorrect) {
         <div
           v-for="(a, index) in selectedSession.answers"
           :key="a.questionId"
-          :class="['answer-item', answerClass(a.isCorrect)]"
+          :class="['answer-item', answerClass(a)]"
         >
           <div class="mono answer-item__meta">
             Q{{ String(index + 1).padStart(2, '0') }} · {{ a.questionType }}
