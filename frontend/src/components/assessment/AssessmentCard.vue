@@ -24,7 +24,7 @@ const router = useRouter()
         <span class="dot" />
         <span>{{ assessment.durationMinutes }} min</span>
       </div>
-      <div v-if="assessment.description" class="arow__meta" style="margin-top: 2px;">
+      <div v-if="assessment.description" class="arow__meta arow__meta--desc">
         {{ assessment.description }}
       </div>
     </div>
@@ -38,4 +38,5 @@ const router = useRouter()
 
 <style scoped>
 .dot { width: 3px; height: 3px; border-radius: 50%; background: var(--faint); }
+.arow__meta--desc { margin-top: 2px; }
 </style>

@@ -2,6 +2,7 @@
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { getResults, getSessionDetail } from '@/api/results'
+import { scoreTag } from '@/utils/score'
 
 const route = useRoute()
 const router = useRouter()
@@ -29,17 +30,16 @@ function closeDetail() {
   selectedSession.value = null
 }
 
-function scoreTag(score) {
-  if (score === null) return ''
-  if (score >= 75) return 'tag--ok'
-  if (score >= 50) return 'tag--warn'
-  return 'tag--bad'
-}
-
 function statusTag(status) {
   if (status === 'COMPLETED') return 'tag--ok'
   if (status === 'IN_PROGRESS') return 'tag--warn'
   return ''
+}
+
+function answerClass(isCorrect) {
+  if (isCorrect === true) return 'is-correct'
+  if (isCorrect === false) return 'is-incorrect'
+  return 'is-open'
 }
 </script>
 
@@ -59,44 +59,39 @@ function statusTag(status) {
       </div>
     </header>
 
-    <p v-if="error" class="error-text" style="margin-bottom: 20px;">{{ error }}</p>
+    <p v-if="error" class="error-text results__error">{{ error }}</p>
 
     <!-- Session detail panel -->
-    <div v-if="selectedSession" class="card fade-in" style="padding: 24px; margin-bottom: 24px;">
-      <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px;">
+    <div v-if="selectedSession" class="card fade-in session-detail">
+      <div class="session-detail__header">
         <div>
-          <div class="display" style="font-size: 22px; letter-spacing: -0.01em;">{{ selectedSession.candidateName }}</div>
-          <div class="mono" style="font-size: 11px; color: var(--muted); margin-top: 2px;">{{ selectedSession.candidateEmail }}</div>
+          <div class="display session-detail__name">{{ selectedSession.candidateName }}</div>
+          <div class="mono session-detail__email">{{ selectedSession.candidateEmail }}</div>
         </div>
-        <div style="display: flex; gap: 10px; align-items: center;">
-          <span v-if="selectedSession.score !== null" :class="['tag', scoreTag(selectedSession.score)]" style="font-size: 14px; padding: 4px 10px;">
+        <div class="session-detail__meta">
+          <span v-if="selectedSession.score !== null" :class="['tag', 'session-detail__score', scoreTag(selectedSession.score)]">
             {{ selectedSession.score }}%
           </span>
           <button class="icon-btn" @click="closeDetail">✕</button>
         </div>
       </div>
 
-      <div style="display: flex; flex-direction: column; gap: 8px;">
+      <div class="session-detail__answers">
         <div
           v-for="(a, index) in selectedSession.answers"
           :key="a.questionId"
-          :style="{
-            padding: '10px 14px',
-            borderLeft: '3px solid ' + (a.isCorrect === true ? 'var(--ok)' : a.isCorrect === false ? 'var(--bad)' : 'var(--accent)'),
-            background: 'var(--bg-2)',
-            borderRadius: '0 4px 4px 0',
-          }"
+          :class="['answer-item', answerClass(a.isCorrect)]"
         >
-          <div class="mono" style="font-size: 10px; color: var(--muted); letter-spacing: 0.1em; margin-bottom: 4px;">
+          <div class="mono answer-item__meta">
             Q{{ String(index + 1).padStart(2, '0') }} · {{ a.questionType }}
             <span v-if="a.isCorrect !== null"> · {{ a.isCorrect ? 'CORRECT' : 'INCORRECT' }}</span>
             <span v-else> · OPEN · TO REVIEW</span>
           </div>
-          <div style="font-size: 13px; color: var(--ink-2);">{{ a.questionText }}</div>
-          <div v-if="a.selectedOptionText" style="font-size: 12px; color: var(--muted); margin-top: 4px;">
+          <div class="answer-item__text">{{ a.questionText }}</div>
+          <div v-if="a.selectedOptionText" class="answer-item__selected">
             → {{ a.selectedOptionText }}
           </div>
-          <div v-if="a.openTextAnswer" style="font-size: 12px; color: var(--muted); margin-top: 4px; font-style: italic;">
+          <div v-if="a.openTextAnswer" class="answer-item__open">
             {{ a.openTextAnswer }}
           </div>
         </div>
@@ -106,10 +101,10 @@ function statusTag(status) {
     <!-- Candidates table -->
     <div v-if="results.length === 0 && !error" class="empty-state">
       <p class="empty-title">No results yet</p>
-      <p style="color: var(--muted);">Results will appear here once candidates complete the assessment.</p>
+      <p class="text-muted">Results will appear here once candidates complete the assessment.</p>
     </div>
 
-    <div v-else class="card" style="overflow: hidden;">
+    <div v-else class="card results-table-card">
       <table class="table">
         <thead>
           <tr>
@@ -124,8 +119,8 @@ function statusTag(status) {
           <tr v-for="r in results" :key="r.sessionId" @click="openDetail(r.sessionId)">
             <td>
               <div>
-                <div style="font-weight: 500;">{{ r.candidateName }}</div>
-                <div class="mono" style="font-size: 10.5px; color: var(--muted);">{{ r.candidateEmail }}</div>
+                <div class="results__cand-name">{{ r.candidateName }}</div>
+                <div class="mono results__cand-email">{{ r.candidateEmail }}</div>
               </div>
             </td>
             <td>
@@ -135,12 +130,12 @@ function statusTag(status) {
             </td>
             <td>
               <span v-if="r.score !== null" :class="['tag', scoreTag(r.score)]">{{ r.score }}%</span>
-              <span v-else style="color: var(--faint);">—</span>
+              <span v-else class="results__no-score">—</span>
             </td>
-            <td style="color: var(--muted); font-size: 13px;">
+            <td class="results__date">
               {{ r.completedAt ? new Date(r.completedAt).toLocaleDateString() : '—' }}
             </td>
-            <td style="text-align: right;">
+            <td class="results__view-col">
               <button class="btn btn--ghost btn--sm" @click.stop="openDetail(r.sessionId)">View</button>
             </td>
           </tr>
@@ -149,3 +144,40 @@ function statusTag(status) {
     </div>
   </div>
 </template>
+
+<style scoped>
+.results__error { margin-bottom: 20px; }
+
+.session-detail { padding: 24px; margin-bottom: 24px; }
+.session-detail__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 16px;
+}
+.session-detail__name { font-size: 22px; letter-spacing: -0.01em; }
+.session-detail__email { font-size: 11px; color: var(--muted); margin-top: 2px; }
+.session-detail__meta { display: flex; gap: 10px; align-items: center; }
+.session-detail__score { font-size: 14px; padding: 4px 10px; }
+.session-detail__answers { display: flex; flex-direction: column; gap: 8px; }
+
+.answer-item {
+  padding: 10px 14px;
+  border-left: 3px solid var(--accent);
+  background: var(--bg-2);
+  border-radius: 0 4px 4px 0;
+}
+.answer-item.is-correct { border-left-color: var(--ok); }
+.answer-item.is-incorrect { border-left-color: var(--bad); }
+.answer-item__meta { font-size: 10px; color: var(--muted); letter-spacing: 0.1em; margin-bottom: 4px; }
+.answer-item__text { font-size: 13px; color: var(--ink-2); }
+.answer-item__selected { font-size: 12px; color: var(--muted); margin-top: 4px; }
+.answer-item__open { font-size: 12px; color: var(--muted); margin-top: 4px; font-style: italic; }
+
+.results-table-card { overflow: hidden; }
+.results__cand-name { font-weight: 500; }
+.results__cand-email { font-size: 10.5px; color: var(--muted); }
+.results__no-score { color: var(--faint); }
+.results__date { color: var(--muted); font-size: 13px; }
+.results__view-col { text-align: right; }
+</style>

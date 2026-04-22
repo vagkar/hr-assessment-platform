@@ -2,7 +2,7 @@
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAssessmentStore } from '@/stores/assessment'
-import AssessmentCard from '@/components/AssessmentCard.vue'
+import AssessmentCard from '@/components/assessment/AssessmentCard.vue'
 
 const router = useRouter()
 const assessmentStore = useAssessmentStore()
@@ -55,10 +55,10 @@ async function handleDelete(id) {
     </header>
 
     <!-- New assessment form -->
-    <div v-if="showForm" class="card fade-in" style="padding: 28px; margin-bottom: 28px;">
-      <h2 class="display" style="font-size: 26px; margin: 0 0 20px;">New assessment</h2>
+    <div v-if="showForm" class="card fade-in create-card">
+      <h2 class="display create-card__title">New assessment</h2>
       <form @submit.prevent="handleSubmit">
-        <div class="form-row" style="margin-bottom: 16px;">
+        <div class="form-row create-card__row">
           <div class="field">
             <label class="field__label">Title</label>
             <input class="input" v-model="form.title" placeholder="e.g. Senior Frontend Engineer" required />
@@ -68,16 +68,16 @@ async function handleDelete(id) {
             <input class="input" type="number" v-model="form.durationMinutes" min="1" required />
           </div>
         </div>
-        <div class="field" style="margin-bottom: 16px;">
+        <div class="field create-card__field">
           <label class="field__label">Description</label>
           <input class="input" v-model="form.description" placeholder="Short summary candidates will see before starting" />
         </div>
-        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 20px;">
+        <div class="checkbox-row create-card__checkbox">
           <input type="checkbox" id="isActive" v-model="form.isActive" />
-          <label for="isActive" style="font-size: 13px; color: var(--ink);">Active</label>
+          <label for="isActive">Active</label>
         </div>
-        <p v-if="error" class="error-text" style="margin-bottom: 12px;">{{ error }}</p>
-        <div style="display: flex; justify-content: flex-end; gap: 8px;">
+        <p v-if="error" class="error-text create-card__error">{{ error }}</p>
+        <div class="form-actions">
           <button type="button" class="btn btn--ghost" @click="cancelForm">Cancel</button>
           <button type="submit" class="btn btn--primary" :disabled="loading">
             <span v-if="loading" class="spinner" />
@@ -90,7 +90,7 @@ async function handleDelete(id) {
     <!-- Empty state -->
     <div v-if="assessmentStore.assessments.length === 0 && !showForm" class="empty-state">
       <p class="empty-title">No assessments yet</p>
-      <p style="color: var(--muted); margin-bottom: 20px;">Create your first assessment to start evaluating candidates.</p>
+      <p class="text-muted">Create your first assessment to start evaluating candidates.</p>
       <button class="btn btn--primary" @click="showForm = true">+ New assessment</button>
     </div>
 
@@ -116,3 +116,12 @@ async function handleDelete(id) {
     </template>
   </div>
 </template>
+
+<style scoped>
+.create-card { padding: 28px; margin-bottom: 28px; }
+.create-card__title { font-size: 26px; margin: 0 0 20px; }
+.create-card__row { margin-bottom: 16px; }
+.create-card__field { margin-bottom: 16px; }
+.create-card__checkbox { margin-bottom: 20px; }
+.create-card__error { margin-bottom: 12px; }
+</style>

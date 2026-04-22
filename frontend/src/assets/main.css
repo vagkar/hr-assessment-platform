@@ -286,6 +286,10 @@ h2 { font-family: var(--f-display); font-weight: 400; font-size: 1.5rem; letter-
 .input:disabled { opacity: 0.5; cursor: not-allowed; }
 
 .field { display: flex; flex-direction: column; gap: 6px; }
+.form-actions { display: flex; justify-content: flex-end; gap: 8px; }
+.error-text { color: var(--bad); font-size: 12px; font-family: var(--f-mono); }
+.checkbox-row { display: flex; align-items: center; gap: 10px; }
+.checkbox-row label { font-size: 13px; color: var(--ink); cursor: pointer; }
 .field__label {
   font-family: var(--f-mono);
   font-size: 10.5px;
@@ -735,13 +739,6 @@ input[type="checkbox"]:focus-visible {
 }
 @keyframes spin { to { transform: rotate(360deg); } }
 
-.error-text {
-  color: var(--bad);
-  font-size: 13px;
-  font-family: var(--f-mono);
-  font-size: 12px;
-}
-
 .text-muted { color: var(--muted); font-size: 14px; }
 
 .back-link {
@@ -754,7 +751,6 @@ input[type="checkbox"]:focus-visible {
 }
 .back-link:hover { color: var(--ink); }
 
-.form-actions { display: flex; gap: 8px; margin-top: 20px; }
 .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
 
 .empty-state {

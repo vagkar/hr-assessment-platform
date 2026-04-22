@@ -53,8 +53,8 @@ async function handleSubmit() {
           <label class="field__label">Password</label>
           <input class="input" type="password" v-model="password" placeholder="••••••••" required />
         </div>
-        <p v-if="error" class="error-text" style="margin-top: 4px;">{{ error }}</p>
-        <button type="submit" class="btn btn--primary btn--lg btn--block" :disabled="loading" style="margin-top: 8px;">
+        <p v-if="error" class="error-text">{{ error }}</p>
+        <button type="submit" class="btn btn--primary btn--lg btn--block" :disabled="loading">
           <span v-if="loading" class="spinner" />
           {{ loading ? 'Signing in…' : 'Sign in →' }}
         </button>

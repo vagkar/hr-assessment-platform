@@ -31,7 +31,7 @@ const TYPE_LABELS = {
         </span>
       </div>
 
-      <div v-if="question.type === 'OPEN_TEXT'" style="padding: 12px 14px; background: var(--bg-2); border-radius: 4px; font-style: italic; color: var(--muted); font-size: 13px;">
+      <div v-if="question.type === 'OPEN_TEXT'" class="qcard__open">
         Open text response · reviewed manually
       </div>
     </div>
@@ -50,3 +50,14 @@ const TYPE_LABELS = {
     </div>
   </div>
 </template>
+
+<style scoped>
+.qcard__open {
+  padding: 12px 14px;
+  background: var(--bg-2);
+  border-radius: 4px;
+  font-style: italic;
+  color: var(--muted);
+  font-size: 13px;
+}
+</style>
