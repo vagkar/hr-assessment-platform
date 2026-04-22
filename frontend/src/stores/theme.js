@@ -1,17 +1,18 @@
 import { defineStore } from 'pinia'
 import { ref, watch } from 'vue'
 
-const THEMES = ['paper', 'light', 'dark']
+const THEMES = ['paper', 'dark']
 
 export const useThemeStore = defineStore('theme', () => {
-  const theme = ref(localStorage.getItem('theme') ?? 'paper')
+  const stored = localStorage.getItem('theme')
+  const theme = ref(stored === 'dark' ? 'dark' : 'paper')
 
   const isDark = ref(theme.value === 'dark')
 
   watch(theme, (t) => {
     isDark.value = t === 'dark'
-    if (t === 'dark' || t === 'light') {
-      document.documentElement.setAttribute('data-theme', t)
+    if (t === 'dark') {
+      document.documentElement.setAttribute('data-theme', 'dark')
     } else {
       document.documentElement.removeAttribute('data-theme')
     }

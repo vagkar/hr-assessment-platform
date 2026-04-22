@@ -1,9 +1,9 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAssessmentStore } from '@/stores/assessment'
 import { getQuestions, createQuestion, updateQuestion, deleteQuestion } from '@/api/questions'
-import { createInvite } from '@/api/assessments'
+import { createInvite, updateAssessment } from '@/api/assessments'
 import QuestionCard from '@/components/QuestionCard.vue'
 
 const route = useRoute()
@@ -27,10 +27,31 @@ const copied = ref(false)
 const error = ref(null)
 const loading = ref(false)
 
+const settingsForm = ref(null)
+const settingsOriginal = ref(null)
+const settingsSaved = ref(false)
+const settingsError = ref(null)
+const settingsLoading = ref(false)
+
+const settingsChanged = computed(() => {
+  if (!settingsForm.value || !settingsOriginal.value) return false
+  return JSON.stringify(settingsForm.value) !== JSON.stringify(settingsOriginal.value)
+})
+
 const appUrl = import.meta.env.VITE_APP_URL
 
 onMounted(async () => {
   assessment.value = assessmentStore.assessments.find((a) => a.id === assessmentId)
+  if (assessment.value) {
+    const initial = {
+      title: assessment.value.title,
+      description: assessment.value.description || '',
+      durationMinutes: assessment.value.durationMinutes,
+      isActive: assessment.value.isActive,
+    }
+    settingsForm.value = { ...initial }
+    settingsOriginal.value = { ...initial }
+  }
   await loadQuestions()
 })
 
@@ -104,10 +125,32 @@ async function handleInvite() {
     inviteResult.value = res.data
     inviteForm.value = { candidateName: '', candidateEmail: '' }
     showInviteForm.value = false
+    await navigator.clipboard.writeText(`${appUrl}/candidate/${res.data.inviteToken}`)
+    copied.value = true
+    setTimeout(() => (copied.value = false), 2000)
   } catch (e) {
     error.value = e.response?.data?.message || 'Failed to create invite'
   } finally {
     loading.value = false
+  }
+}
+
+async function handleSaveSettings() {
+  settingsError.value = null
+  settingsLoading.value = true
+  try {
+    const res = await updateAssessment(assessmentId, settingsForm.value)
+    assessment.value = res.data
+    assessmentStore.assessments = assessmentStore.assessments.map((a) =>
+      a.id === assessmentId ? res.data : a
+    )
+    settingsOriginal.value = { ...settingsForm.value }
+    settingsSaved.value = true
+    setTimeout(() => (settingsSaved.value = false), 2000)
+  } catch (e) {
+    settingsError.value = e.response?.data?.message || 'Failed to save'
+  } finally {
+    settingsLoading.value = false
   }
 }
 
@@ -186,7 +229,7 @@ async function copyInviteLink() {
       <!-- Invite result banner -->
       <div v-if="inviteResult" class="card fade-in invite-banner">
         <div style="display: flex; align-items: center; gap: 14px;">
-          <div style="width: 32px; height: 32px; border-radius: 50%; background: var(--accent); color: var(--accent-ink); display: grid; place-items: center; flex-shrink: 0;">✓</div>
+          <div style="width: 32px; height: 32px; border-radius: 50%; background: var(--ok); color: #fff; display: grid; place-items: center; flex-shrink: 0;">✓</div>
           <div>
             <div style="font-weight: 500;">Invite sent to {{ inviteResult.inviteToken ? 'candidate' : '' }}</div>
             <div class="mono" style="font-size: 11px; color: var(--muted); margin-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 400px;">
@@ -290,13 +333,30 @@ async function copyInviteLink() {
         <!-- Sidebar -->
         <aside class="twocol__side">
           <div class="card" style="padding: 22px;">
-            <div class="eyebrow" style="margin-bottom: 12px;">Assessment link</div>
-            <div class="mono" style="font-size: 11px; background: var(--bg-2); padding: 10px 12px; border-radius: 4px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
-              {{ appUrl }}/candidate/invite
-            </div>
-            <p style="font-size: 12px; color: var(--muted); margin: 12px 0 0; line-height: 1.5;">
-              Send individual invites to track candidates by email — each gets a unique link.
-            </p>
+            <div class="eyebrow" style="margin-bottom: 16px;">Settings</div>
+            <form v-if="settingsForm" @submit.prevent="handleSaveSettings">
+              <div class="field" style="margin-bottom: 12px;">
+                <label class="field__label">Title</label>
+                <input class="input" v-model="settingsForm.title" required />
+              </div>
+              <div class="field" style="margin-bottom: 12px;">
+                <label class="field__label">Description</label>
+                <textarea class="input" v-model="settingsForm.description" rows="2" />
+              </div>
+              <div class="field" style="margin-bottom: 12px;">
+                <label class="field__label">Duration (minutes)</label>
+                <input class="input" type="number" min="1" v-model.number="settingsForm.durationMinutes" required />
+              </div>
+              <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 18px;">
+                <input type="checkbox" id="isActive" v-model="settingsForm.isActive" />
+                <label for="isActive" style="font-size: 13px; color: var(--ink);">Active</label>
+              </div>
+              <p v-if="settingsError" class="error-text" style="margin-bottom: 10px;">{{ settingsError }}</p>
+              <button type="submit" class="btn btn--primary btn--sm btn--block" :disabled="settingsLoading || !settingsChanged">
+                <span v-if="settingsLoading" class="spinner" />
+                {{ settingsSaved ? '✓ Saved' : 'Save changes' }}
+              </button>
+            </form>
           </div>
         </aside>
       </div>
@@ -312,8 +372,8 @@ async function copyInviteLink() {
   gap: 16px;
   padding: 18px 22px;
   margin-bottom: 22px;
-  background: var(--accent-wash);
-  border-color: color-mix(in srgb, var(--accent) 30%, var(--rule));
+  background: color-mix(in srgb, var(--ok) 8%, var(--surface));
+  border-color: color-mix(in srgb, var(--ok) 25%, var(--rule));
 }
 
 @media (max-width: 640px) {

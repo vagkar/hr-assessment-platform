@@ -3,6 +3,7 @@ import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { getSession, startSession, submitAnswers } from '@/api/candidate'
 import BrandLogo from '@/components/BrandLogo.vue'
+import ThemeToggle from '@/components/ThemeToggle.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -99,7 +100,15 @@ async function handleSubmit() {
       openTextAnswer: answers.value[q.id]?.openTextAnswer || null,
     }))
     const res = await submitAnswers(token, { answers: payload })
-    router.push({ name: 'candidate-complete', params: { token }, state: { result: res.data } })
+    router.push({
+      name: 'candidate-complete',
+      params: { token },
+      state: {
+        result: res.data,
+        questions: session.value.questions,
+        answers: answers.value,
+      },
+    })
   } catch (e) {
     error.value = e.response?.data?.message || 'Failed to submit'
   } finally {
@@ -110,6 +119,13 @@ async function handleSubmit() {
 function isAnswered(q) {
   const a = answers.value[q.id]
   return !!(a?.selectedOptionId || a?.openTextAnswer?.trim())
+}
+
+function selectOption(optId) {
+  answers.value[currentQuestion.value.id].selectedOptionId = optId
+  if (currentIdx.value < totalCount.value - 1) {
+    setTimeout(() => currentIdx.value++, 320)
+  }
 }
 </script>
 
@@ -141,6 +157,7 @@ function isAnswered(q) {
           </div>
           <div class="cand-top__meta">
             <span>ASSESSMENT INVITE</span>
+            <ThemeToggle />
           </div>
         </div>
         <div class="cand-main">
@@ -218,7 +235,7 @@ function isAnswered(q) {
                 v-for="(opt, j) in currentQuestion.options"
                 :key="opt.id"
                 :class="['cand-opt', { 'is-selected': answers[currentQuestion.id].selectedOptionId === opt.id }]"
-                @click="answers[currentQuestion.id].selectedOptionId = opt.id"
+                @click="selectOption(opt.id)"
               >
                 <span class="cand-opt__key">{{ String.fromCharCode(65 + j) }}</span>
                 <span>{{ opt.text }}</span>

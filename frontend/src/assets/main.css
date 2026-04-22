@@ -13,10 +13,10 @@
   --rule:      #d6cfc0;
   --rule-soft: #e5dfd1;
 
-  --accent:       oklch(0.58 0.17 28);
+  --accent:       oklch(0.58 0.18 42);
   --accent-ink:   #ffffff;
-  --accent-soft:  oklch(0.92 0.04 28);
-  --accent-wash:  oklch(0.96 0.02 28);
+  --accent-soft:  oklch(0.92 0.04 42);
+  --accent-wash:  oklch(0.96 0.02 42);
 
   --ok:   oklch(0.55 0.12 150);
   --warn: oklch(0.62 0.15 70);
@@ -57,8 +57,8 @@
   --faint:     #555049;
   --rule:      #2d2a26;
   --rule-soft: #252220;
-  --accent-wash: oklch(0.28 0.06 28);
-  --accent-soft: oklch(0.38 0.10 28);
+  --accent-wash: oklch(0.28 0.06 42);
+  --accent-soft: oklch(0.38 0.10 42);
 }
 
 /* Compat bridge for any component still using old vars */
@@ -296,6 +296,28 @@ h2 { font-family: var(--f-display); font-weight: 400; font-size: 1.5rem; letter-
 }
 
 select.input { appearance: none; cursor: pointer; }
+
+/* ——— Checkbox ——— */
+input[type="checkbox"] {
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  border: 1.5px solid var(--muted);
+  border-radius: 3px;
+  background: transparent;
+  cursor: pointer;
+  transition: border-color var(--dur-fast) var(--ease), background var(--dur-fast) var(--ease);
+}
+input[type="checkbox"]:checked {
+  background-color: var(--ok);
+  border-color: var(--ok);
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 16 16' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M3 9L6 12L13 4.5' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+}
+input[type="checkbox"]:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--ink) 12%, transparent);
+}
 
 /* ——— Tag / chip ——— */
 .tag {
@@ -680,12 +702,13 @@ select.input { appearance: none; cursor: pointer; }
 .done__inner { max-width: 520px; display: flex; flex-direction: column; gap: 24px; align-items: center; }
 .done__mark {
   width: 72px; height: 72px;
-  border: 1px solid var(--rule);
   border-radius: 50%;
   display: grid; place-items: center;
+  background: var(--ok);
+  color: #fff;
   font-family: var(--f-display);
-  font-size: 28px;
-  color: var(--accent);
+  font-size: 32px;
+  line-height: 1;
 }
 .done h1 { font-family: var(--f-display); font-size: 52px; line-height: 1.05; letter-spacing: -0.02em; margin: 0; font-weight: 400; }
 .done h1 em { font-style: italic; color: var(--accent); }

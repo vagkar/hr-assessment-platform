@@ -10,12 +10,8 @@ const themeStore = useThemeStore()
     :title="`Theme: ${themeStore.theme} → click to cycle`"
     @click="themeStore.cycle"
   >
-    <!-- paper: circle outline -->
+    <!-- paper: sun (light) -->
     <svg v-if="themeStore.theme === 'paper'" width="15" height="15" viewBox="0 0 15 15" fill="none" aria-hidden="true">
-      <circle cx="7.5" cy="7.5" r="5.5" stroke="currentColor" stroke-width="1.5"/>
-    </svg>
-    <!-- light: sun -->
-    <svg v-else-if="themeStore.theme === 'light'" width="15" height="15" viewBox="0 0 15 15" fill="none" aria-hidden="true">
       <circle cx="7.5" cy="7.5" r="2.5" fill="currentColor"/>
       <line x1="7.5" y1="1"    x2="7.5" y2="3"    stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
       <line x1="7.5" y1="12"   x2="7.5" y2="14"   stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
@@ -37,7 +33,9 @@ const themeStore = useThemeStore()
 .theme-toggle {
   display: grid;
   place-items: center;
-  width: 30px;
+  width: 28px;
+  height: 28px;
   padding: 0;
+  aspect-ratio: 1;
 }
 </style>

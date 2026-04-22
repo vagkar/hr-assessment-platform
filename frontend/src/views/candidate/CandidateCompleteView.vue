@@ -33,9 +33,9 @@ function scoreTag(score) {
         </p>
       </div>
 
-      <button class="btn btn--ghost" onclick="window.close()">
-        Close window ↗
-      </button>
+      <p class="mono" style="font-size: 11px; color: var(--faint); letter-spacing: 0.08em; text-transform: uppercase;">
+        You may close this tab
+      </p>
     </div>
   </div>
 </template>
