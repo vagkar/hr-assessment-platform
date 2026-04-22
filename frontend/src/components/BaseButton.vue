@@ -3,17 +3,27 @@ defineProps({
   variant: {
     type: String,
     default: 'primary',
-    validator: (v) => ['primary', 'outline', 'danger'].includes(v),
+    validator: (v) => ['primary', 'outline', 'danger', 'ghost', 'link', 'accent'].includes(v),
   },
   loading: { type: Boolean, default: false },
   disabled: { type: Boolean, default: false },
   block: { type: Boolean, default: false },
+  sm: { type: Boolean, default: false },
 })
 </script>
 
 <template>
   <button
-    :class="['btn', `btn-${variant}`, { 'btn-block': block }]"
+    :class="[
+      'btn',
+      variant === 'primary' ? 'btn--primary' :
+      variant === 'danger'  ? 'btn--danger'  :
+      variant === 'ghost'   ? 'btn--ghost'   :
+      variant === 'link'    ? 'btn--link'    :
+      variant === 'accent'  ? 'btn--accent'  :
+      'btn--ghost',
+      { 'btn--block': block, 'btn--sm': sm },
+    ]"
     :disabled="disabled || loading"
     v-bind="$attrs"
   >
@@ -21,19 +31,3 @@ defineProps({
     <slot />
   </button>
 </template>
-
-<style scoped>
-.spinner {
-  width: 0.875rem;
-  height: 0.875rem;
-  border: 2px solid currentColor;
-  border-top-color: transparent;
-  border-radius: 50%;
-  animation: spin 0.6s linear infinite;
-  flex-shrink: 0;
-}
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
-</style>

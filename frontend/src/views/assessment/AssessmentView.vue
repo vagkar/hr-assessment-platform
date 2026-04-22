@@ -4,10 +4,6 @@ import { useRoute, useRouter } from 'vue-router'
 import { useAssessmentStore } from '@/stores/assessment'
 import { getQuestions, createQuestion, updateQuestion, deleteQuestion } from '@/api/questions'
 import { createInvite } from '@/api/assessments'
-import BaseButton from '@/components/BaseButton.vue'
-import BaseCard from '@/components/BaseCard.vue'
-import BaseInput from '@/components/BaseInput.vue'
-import FormGroup from '@/components/FormGroup.vue'
 import QuestionCard from '@/components/QuestionCard.vue'
 
 const route = useRoute()
@@ -124,329 +120,203 @@ async function copyInviteLink() {
 </script>
 
 <template>
-  <div>
-    <button class="back-link" @click="router.push('/dashboard')">← Back to Assessments</button>
+  <div class="page__inner fade-in">
+    <button class="back-link" @click="router.push('/dashboard')">
+      ← Back to assessments
+    </button>
 
     <div v-if="assessment">
-      <header class="assessment-header">
-        <div class="header-info">
+      <header class="page__header">
+        <div class="page__title">
+          <span class="eyebrow">Assessment № {{ String(assessmentId).padStart(3, '0') }}</span>
           <h1>{{ assessment.title }}</h1>
-          <div class="header-meta">
-            <span class="chip">{{ assessment.durationMinutes }} min</span>
-            <span class="chip">{{ questions.length }} question{{ questions.length !== 1 ? 's' : '' }}</span>
+          <p class="page__subtitle">{{ assessment.description }}</p>
+          <div style="display: flex; gap: 8px; margin-top: 14px; flex-wrap: wrap;">
+            <span :class="['tag', 'tag--dot', assessment.isActive ? 'tag--ok' : 'tag--warn']">
+              {{ assessment.isActive ? 'active' : 'inactive' }}
+            </span>
+            <span class="tag">{{ assessment.durationMinutes }} min</span>
+            <span class="tag">{{ questions.length }} questions</span>
           </div>
         </div>
-        <div class="header-actions">
-          <BaseButton variant="outline" @click="router.push(`/assessments/${assessmentId}/results`)">
-            Results
-          </BaseButton>
-          <BaseButton variant="outline" @click="showInviteForm = !showInviteForm">
-            {{ showInviteForm ? 'Cancel' : 'Send Invite' }}
-          </BaseButton>
-          <BaseButton @click="showQuestionForm ? cancelQuestionForm() : (resetQuestionForm(), showQuestionForm = true)">
-            {{ showQuestionForm ? 'Cancel' : '+ Add Question' }}
-          </BaseButton>
+        <div class="page__actions">
+          <button class="btn btn--ghost" @click="router.push(`/assessments/${assessmentId}/results`)">
+            View results →
+          </button>
+          <button class="btn btn--ghost" @click="showInviteForm = !showInviteForm">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg>
+            {{ showInviteForm ? 'Cancel' : 'Send invite' }}
+          </button>
+          <button
+            class="btn btn--primary"
+            @click="showQuestionForm ? cancelQuestionForm() : (resetQuestionForm(), showQuestionForm = true)"
+          >
+            {{ showQuestionForm ? 'Cancel' : '+ Add question' }}
+          </button>
         </div>
       </header>
 
       <!-- Invite form -->
-      <BaseCard v-if="showInviteForm" class="form-card">
-        <h2 class="form-title">Send Invite</h2>
-        <p class="form-subtitle">The candidate will receive a unique link to take this assessment.</p>
+      <div v-if="showInviteForm" class="card fade-in" style="padding: 24px; margin-bottom: 22px;">
+        <div style="display: flex; align-items: baseline; gap: 12px; margin-bottom: 18px;">
+          <h2 class="display" style="font-size: 24px; margin: 0;">Send invite</h2>
+          <span class="eyebrow">Candidate receives a unique link</span>
+        </div>
         <form @submit.prevent="handleInvite">
-          <div class="form-row">
-            <FormGroup label="Candidate Name">
-              <BaseInput v-model="inviteForm.candidateName" placeholder="Jane Doe" required />
-            </FormGroup>
-            <FormGroup label="Candidate Email">
-              <BaseInput v-model="inviteForm.candidateEmail" type="email" placeholder="jane@example.com" required />
-            </FormGroup>
+          <div class="form-row" style="margin-bottom: 18px;">
+            <div class="field">
+              <label class="field__label">Candidate name</label>
+              <input class="input" v-model="inviteForm.candidateName" placeholder="Jane Doe" required />
+            </div>
+            <div class="field">
+              <label class="field__label">Email</label>
+              <input class="input" type="email" v-model="inviteForm.candidateEmail" placeholder="jane@example.com" required />
+            </div>
           </div>
-          <div class="form-actions">
-            <BaseButton type="submit" :loading="loading">Send Invite</BaseButton>
+          <div style="display: flex; justify-content: flex-end; gap: 8px;">
+            <button type="button" class="btn btn--ghost" @click="showInviteForm = false">Cancel</button>
+            <button type="submit" class="btn btn--primary" :disabled="loading">
+              <span v-if="loading" class="spinner" />
+              Send invite
+            </button>
           </div>
         </form>
-      </BaseCard>
+      </div>
 
-      <!-- Invite result -->
-      <div v-if="inviteResult" class="invite-banner">
-        <div class="invite-banner-content">
-          <span class="invite-banner-icon">✓</span>
-          <div class="invite-banner-text">
-            <strong>Invite created!</strong>
-            <span class="invite-link">{{ `${appUrl}/candidate/${inviteResult.inviteToken}` }}</span>
+      <!-- Invite result banner -->
+      <div v-if="inviteResult" class="card fade-in invite-banner">
+        <div style="display: flex; align-items: center; gap: 14px;">
+          <div style="width: 32px; height: 32px; border-radius: 50%; background: var(--accent); color: var(--accent-ink); display: grid; place-items: center; flex-shrink: 0;">✓</div>
+          <div>
+            <div style="font-weight: 500;">Invite sent to {{ inviteResult.inviteToken ? 'candidate' : '' }}</div>
+            <div class="mono" style="font-size: 11px; color: var(--muted); margin-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 400px;">
+              {{ appUrl }}/candidate/{{ inviteResult.inviteToken }}
+            </div>
           </div>
         </div>
-        <div class="invite-banner-actions">
-          <BaseButton variant="outline" @click="copyInviteLink">
-            {{ copied ? '✓ Copied' : 'Copy Link' }}
-          </BaseButton>
-          <BaseButton variant="outline" @click="inviteResult = null">Dismiss</BaseButton>
+        <div style="display: flex; gap: 8px; flex-shrink: 0;">
+          <button class="btn btn--ghost btn--sm" @click="copyInviteLink">
+            {{ copied ? '✓ Copied' : 'Copy link' }}
+          </button>
+          <button class="btn btn--link btn--sm" @click="inviteResult = null">✕</button>
         </div>
       </div>
 
-      <!-- Question form -->
-      <BaseCard v-if="showQuestionForm" class="form-card">
-        <h2 class="form-title">{{ editingQuestionId ? 'Edit Question' : 'New Question' }}</h2>
-        <form @submit.prevent="handleSubmitQuestion">
-          <FormGroup label="Question Text">
-            <BaseInput v-model="questionForm.text" :rows="3" placeholder="Enter your question..." required />
-          </FormGroup>
-          <div class="form-row">
-            <FormGroup label="Type">
-              <select v-model="questionForm.type">
-                <option value="MULTIPLE_CHOICE">Multiple Choice</option>
-                <option value="TRUE_FALSE">True / False</option>
-                <option value="OPEN_TEXT">Open Text</option>
-              </select>
-            </FormGroup>
-            <FormGroup label="Order">
-              <BaseInput v-model="questionForm.orderIndex" type="number" min="1" required />
-            </FormGroup>
-          </div>
-
-          <div v-if="questionForm.type !== 'OPEN_TEXT'" class="options-section">
-            <p class="options-label">Answer Options</p>
-            <div v-if="questionForm.options.length" class="options-list">
-              <div v-for="(opt, i) in questionForm.options" :key="i" class="option-row">
-                <span class="option-text">{{ opt.text }}</span>
-                <span :class="['option-badge', opt.isCorrect ? 'badge-correct' : 'badge-wrong']">
-                  {{ opt.isCorrect ? 'Correct' : 'Wrong' }}
-                </span>
-                <button type="button" class="remove-btn" @click="removeOption(i)" title="Remove">✕</button>
+      <!-- Two-column layout -->
+      <div class="twocol">
+        <div>
+          <!-- Question form -->
+          <div v-if="showQuestionForm" class="card fade-in" style="padding: 24px; margin-bottom: 14px;">
+            <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 16px;">
+              <h2 class="display" style="font-size: 24px; margin: 0;">
+                {{ editingQuestionId ? 'Edit question' : 'New question' }}
+              </h2>
+              <div style="display: flex; gap: 4px; padding: 3px; background: var(--bg-2); border-radius: 4px;">
+                <button
+                  v-for="t in ['MULTIPLE_CHOICE', 'TRUE_FALSE', 'OPEN_TEXT']"
+                  :key="t"
+                  type="button"
+                  :class="['btn', 'btn--sm', questionForm.type === t ? 'btn--primary' : '']"
+                  :style="questionForm.type !== t ? 'color: var(--muted)' : ''"
+                  @click="questionForm.type = t"
+                >{{ t.replace('_', ' ').toLowerCase() }}</button>
               </div>
             </div>
-            <div class="option-add">
-              <BaseInput v-model="newOption.text" placeholder="Add an option..." />
-              <label class="checkbox-label">
-                <input v-model="newOption.isCorrect" type="checkbox" />
-                Correct
-              </label>
-              <BaseButton type="button" variant="outline" @click="addOption">Add</BaseButton>
+
+            <form @submit.prevent="handleSubmitQuestion">
+              <div class="field" style="margin-bottom: 16px;">
+                <label class="field__label">Question text</label>
+                <textarea class="input" v-model="questionForm.text" rows="3" placeholder="Write your question…" required />
+              </div>
+
+              <div v-if="questionForm.type !== 'OPEN_TEXT'" class="field" style="margin-bottom: 16px;">
+                <label class="field__label">Answers · check to mark correct</label>
+                <div style="display: flex; flex-direction: column; gap: 8px;">
+                  <div v-for="(opt, i) in questionForm.options" :key="i" style="display: flex; gap: 10px; align-items: center;">
+                    <button
+                      type="button"
+                      class="icon-btn"
+                      :style="opt.isCorrect ? 'background: var(--ok); color: #fff; border: 1px solid var(--ok);' : 'border: 1px solid var(--rule);'"
+                      @click="questionForm.options = questionForm.options.map((x, j) => j === i ? { ...x, isCorrect: !x.isCorrect } : x)"
+                    >✓</button>
+                    <input class="input" v-model="opt.text" :placeholder="`Option ${i + 1}`" />
+                    <button type="button" class="icon-btn danger" @click="removeOption(i)">✕</button>
+                  </div>
+                  <div style="display: flex; gap: 8px; align-items: center; margin-top: 4px;">
+                    <input class="input" v-model="newOption.text" placeholder="New option…" @keydown.enter.prevent="addOption" />
+                    <label style="display: flex; align-items: center; gap: 6px; white-space: nowrap; font-family: var(--f-mono); font-size: 11px; color: var(--muted);">
+                      <input type="checkbox" v-model="newOption.isCorrect" />
+                      Correct
+                    </label>
+                    <button type="button" class="btn btn--ghost btn--sm" @click="addOption">Add</button>
+                  </div>
+                </div>
+              </div>
+
+              <p v-if="error" class="error-text" style="margin-bottom: 12px;">{{ error }}</p>
+              <div style="display: flex; justify-content: flex-end; gap: 8px;">
+                <button type="button" class="btn btn--ghost" @click="cancelQuestionForm">Cancel</button>
+                <button type="submit" class="btn btn--primary" :disabled="loading">
+                  <span v-if="loading" class="spinner" />
+                  {{ editingQuestionId ? 'Save changes' : 'Save question' }}
+                </button>
+              </div>
+            </form>
+          </div>
+
+          <!-- Questions list -->
+          <div class="section">
+            <h2>Questions</h2>
+            <span class="section__eyebrow">
+              <span class="num">{{ String(questions.length).padStart(2, '0') }} total</span>
+            </span>
+          </div>
+
+          <div v-if="questions.length === 0 && !showQuestionForm" class="empty-state" style="padding: 48px 20px;">
+            <p class="empty-title">No questions yet</p>
+            <p style="color: var(--muted); margin-bottom: 16px;">Add your first question to get started.</p>
+          </div>
+          <div v-else class="qlist">
+            <QuestionCard
+              v-for="q in questions"
+              :key="q.id"
+              :question="q"
+              @edit="openEditQuestion"
+              @delete="handleDeleteQuestion"
+            />
+          </div>
+        </div>
+
+        <!-- Sidebar -->
+        <aside class="twocol__side">
+          <div class="card" style="padding: 22px;">
+            <div class="eyebrow" style="margin-bottom: 12px;">Assessment link</div>
+            <div class="mono" style="font-size: 11px; background: var(--bg-2); padding: 10px 12px; border-radius: 4px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+              {{ appUrl }}/candidate/invite
             </div>
+            <p style="font-size: 12px; color: var(--muted); margin: 12px 0 0; line-height: 1.5;">
+              Send individual invites to track candidates by email — each gets a unique link.
+            </p>
           </div>
-
-          <p v-if="error" class="error-text">{{ error }}</p>
-          <div class="form-actions">
-            <BaseButton variant="outline" type="button" @click="cancelQuestionForm">Cancel</BaseButton>
-            <BaseButton type="submit" :loading="loading">
-              {{ editingQuestionId ? 'Save Changes' : 'Save Question' }}
-            </BaseButton>
-          </div>
-        </form>
-      </BaseCard>
-
-      <!-- Questions list -->
-      <div v-if="questions.length === 0 && !showQuestionForm" class="empty-state">
-        <div class="empty-icon">📝</div>
-        <p class="empty-title">No questions yet</p>
-        <p class="text-muted">Add your first question to get started.</p>
-      </div>
-      <div v-else class="question-list">
-        <BaseCard v-for="q in questions" :key="q.id" class="question-item">
-          <QuestionCard
-            :question="q"
-            @edit="openEditQuestion"
-            @delete="handleDeleteQuestion"
-          />
-        </BaseCard>
+        </aside>
       </div>
     </div>
   </div>
 </template>
 
 <style scoped>
-.assessment-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: var(--space-xl);
-  gap: var(--space-md);
-}
-
-.header-info h1 { margin-bottom: var(--space-xs); }
-
-.header-meta {
-  display: flex;
-  gap: var(--space-sm);
-  margin-top: var(--space-xs);
-}
-
-.header-actions {
-  display: flex;
-  gap: var(--space-sm);
-  flex-shrink: 0;
-}
-
-/* Forms */
-.form-title { margin-bottom: var(--space-xs); }
-
-/* Invite banner */
 .invite-banner {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: var(--space-md);
-  padding: var(--space-md) var(--space-lg);
-  background: color-mix(in srgb, var(--color-success) 10%, var(--color-bg-card));
-  border: 1px solid color-mix(in srgb, var(--color-success) 30%, transparent);
-  border-radius: var(--radius);
-  margin-bottom: var(--space-lg);
+  gap: 16px;
+  padding: 18px 22px;
+  margin-bottom: 22px;
+  background: var(--accent-wash);
+  border-color: color-mix(in srgb, var(--accent) 30%, var(--rule));
 }
-
-.invite-banner-content {
-  display: flex;
-  align-items: center;
-  gap: var(--space-md);
-  min-width: 0;
-}
-
-.invite-banner-icon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 28px;
-  height: 28px;
-  background: var(--color-success);
-  color: #fff;
-  border-radius: 50%;
-  font-size: 0.875rem;
-  flex-shrink: 0;
-}
-
-.invite-banner-text {
-  display: flex;
-  flex-direction: column;
-  gap: 0.125rem;
-  min-width: 0;
-}
-
-.invite-link {
-  font-size: 0.8125rem;
-  color: var(--color-text-muted);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.invite-banner-actions {
-  display: flex;
-  gap: var(--space-sm);
-  flex-shrink: 0;
-}
-
-/* Options */
-.options-section { margin-top: var(--space-md); }
-
-.options-label {
-  font-size: 0.8125rem;
-  font-weight: 600;
-  letter-spacing: 0.01em;
-  color: var(--color-text-muted);
-  text-transform: uppercase;
-  margin-bottom: var(--space-sm);
-}
-
-.options-list {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-xs);
-  margin-bottom: var(--space-sm);
-}
-
-.option-row {
-  display: flex;
-  align-items: center;
-  gap: var(--space-sm);
-  padding: var(--space-sm) var(--space-md);
-  background: var(--color-bg);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-sm);
-}
-
-.option-text { flex: 1; font-size: 0.9375rem; }
-
-.option-badge {
-  font-size: 0.75rem;
-  font-weight: 600;
-  padding: 0.125rem 0.5rem;
-  border-radius: 999px;
-}
-
-.badge-correct { background: color-mix(in srgb, var(--color-success) 15%, transparent); color: var(--color-success); }
-.badge-wrong   { background: var(--color-bg-hover); color: var(--color-text-muted); }
-
-.remove-btn {
-  background: none;
-  border: none;
-  color: var(--color-text-muted);
-  cursor: pointer;
-  font-size: 0.75rem;
-  padding: 0.25rem;
-  border-radius: var(--radius-sm);
-  transition: color var(--transition), background var(--transition);
-  line-height: 1;
-}
-.remove-btn:hover { color: var(--color-danger); background: color-mix(in srgb, var(--color-danger) 10%, transparent); }
-
-.option-add {
-  display: flex;
-  align-items: center;
-  gap: var(--space-sm);
-}
-.option-add input[type="text"] { flex: 1; }
-
-.checkbox-label {
-  display: flex;
-  align-items: center;
-  gap: var(--space-xs);
-  white-space: nowrap;
-  font-size: 0.875rem;
-  font-weight: 500;
-  color: var(--color-text);
-  text-transform: none;
-  letter-spacing: 0;
-}
-
-/* Questions list */
-.question-list {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-sm);
-}
-
-.question-item { padding: var(--space-lg); }
 
 @media (max-width: 640px) {
-  .assessment-header {
-    flex-direction: column;
-  }
-
-  .header-actions {
-    width: 100%;
-  }
-
-  .header-actions :deep(button) {
-    flex: 1;
-  }
-
-  .invite-banner {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .invite-banner-content {
-    width: 100%;
-    min-width: 0;
-  }
-
-  .invite-banner-actions {
-    width: 100%;
-    justify-content: stretch;
-  }
-
-  .invite-banner-actions :deep(button) {
-    flex: 1;
-  }
+  .invite-banner { flex-direction: column; align-items: flex-start; }
 }
 </style>

@@ -6,9 +6,10 @@ defineProps({
 </script>
 
 <template>
-  <div class="form-group">
-    <label>{{ label }}</label>
+  <div class="field">
+    <label class="field__label">{{ label }}</label>
     <slot />
     <p v-if="error" class="error-text">{{ error }}</p>
   </div>
+
 </template>

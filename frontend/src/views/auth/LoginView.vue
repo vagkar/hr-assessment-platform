@@ -2,9 +2,6 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
-import BaseInput from '@/components/BaseInput.vue'
-import BaseButton from '@/components/BaseButton.vue'
-import FormGroup from '@/components/FormGroup.vue'
 import BrandLogo from '@/components/BrandLogo.vue'
 
 const router = useRouter()
@@ -30,32 +27,42 @@ async function handleSubmit() {
 </script>
 
 <template>
-  <div class="auth-page">
-    <div class="auth-card card">
-      <BrandLogo class="auth-brand" />
-      <h1>Welcome back</h1>
-      <p class="auth-subtitle">Sign in to your account</p>
+  <div class="login">
+    <div class="login__art">
+      <div class="login__artgrid" />
+      <BrandLogo to="/login" class="login__brand" />
+      <div class="login__quote">
+        Hire for what they <em>can do</em> — not what fits on a résumé.
+      </div>
+      <div class="login__foot">
+        <span>Assessment Platform</span>
+        <span>A calmer way to hire</span>
+      </div>
+    </div>
 
-      <form @submit.prevent="handleSubmit">
-        <FormGroup label="Email">
-          <BaseInput v-model="email" type="email" placeholder="you@company.com" required />
-        </FormGroup>
-        <FormGroup label="Password">
-          <BaseInput v-model="password" type="password" placeholder="••••••••" required />
-        </FormGroup>
-        <p v-if="error" class="error-text">{{ error }}</p>
-        <BaseButton type="submit" :loading="loading" block class="submit-btn">
-          Sign in
-        </BaseButton>
+    <div class="login__form fade-in">
+      <h1>Welcome back</h1>
+      <p class="sub">Sign in to your workspace to manage assessments and review candidates.</p>
+
+      <form @submit.prevent="handleSubmit" class="login__fields">
+        <div class="field">
+          <label class="field__label">Work email</label>
+          <input class="input" type="email" v-model="email" placeholder="you@company.com" required />
+        </div>
+        <div class="field">
+          <label class="field__label">Password</label>
+          <input class="input" type="password" v-model="password" placeholder="••••••••" required />
+        </div>
+        <p v-if="error" class="error-text" style="margin-top: 4px;">{{ error }}</p>
+        <button type="submit" class="btn btn--primary btn--lg btn--block" :disabled="loading" style="margin-top: 8px;">
+          <span v-if="loading" class="spinner" />
+          {{ loading ? 'Signing in…' : 'Sign in →' }}
+        </button>
       </form>
 
-      <p class="auth-footer">
-        Don't have an account? <RouterLink to="/register">Sign up</RouterLink>
+      <p class="login__footer">
+        New to Evalify? <RouterLink to="/register">Create a workspace →</RouterLink>
       </p>
     </div>
   </div>
 </template>
-
-<style scoped>
-h1 { margin-bottom: var(--space-xs); }
-</style>

@@ -1,33 +1,36 @@
+<script setup>
+defineProps({
+  to: { type: String, default: '/dashboard' },
+})
+</script>
+
 <template>
-  <div class="brand">
-    <span class="brand-icon">HR</span>
-    <span class="brand-name">Platform</span>
-  </div>
+  <RouterLink :to="to" class="brand">
+    <div class="mark">E</div>
+    <span class="name">Evalify</span>
+  </RouterLink>
 </template>
 
 <style scoped>
 .brand {
   display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 10px;
+  text-decoration: none;
+  color: inherit;
 }
-
-.brand-icon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 28px;
-  height: 28px;
-  background: var(--color-primary);
-  color: #fff;
-  border-radius: 6px;
-  font-size: 0.75rem;
-  font-weight: 700;
+.mark {
+  width: 22px; height: 22px;
+  background: var(--ink); color: var(--bg);
+  display: grid; place-items: center;
+  font-family: var(--f-display);
+  font-size: 16px; line-height: 1;
+  border-radius: 3px;
+  flex-shrink: 0;
 }
-
-.brand-name {
-  font-size: 0.9375rem;
-  font-weight: 700;
-  color: var(--color-text);
+.name {
+  font-family: var(--f-display);
+  font-size: 22px;
+  letter-spacing: -0.01em;
 }
 </style>

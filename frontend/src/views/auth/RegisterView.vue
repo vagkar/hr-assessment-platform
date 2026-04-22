@@ -2,9 +2,6 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
-import BaseInput from '@/components/BaseInput.vue'
-import BaseButton from '@/components/BaseButton.vue'
-import FormGroup from '@/components/FormGroup.vue'
 import BrandLogo from '@/components/BrandLogo.vue'
 
 const router = useRouter()
@@ -35,45 +32,54 @@ async function handleSubmit() {
 </script>
 
 <template>
-  <div class="auth-page">
-    <div class="auth-card card">
-      <BrandLogo class="auth-brand" />
+  <div class="login">
+    <div class="login__art">
+      <div class="login__artgrid" />
+      <BrandLogo to="/login" class="login__brand" />
+      <div class="login__quote">
+        Build assessments that reveal real <em>talent</em>.
+      </div>
+      <div class="login__foot">
+        <span>Assessment Platform</span>
+        <span>Set up in under a minute</span>
+      </div>
+    </div>
+
+    <div class="login__form fade-in">
       <h1>Create account</h1>
-      <p class="auth-subtitle">Set up your company workspace</p>
+      <p class="sub">Set up your company workspace.</p>
 
-      <form @submit.prevent="handleSubmit">
-        <p class="section-label">Company</p>
-        <FormGroup label="Company Name">
-          <BaseInput v-model="form.companyName" placeholder="Acme Corp" required />
-        </FormGroup>
-        <FormGroup label="Company Email">
-          <BaseInput v-model="form.companyEmail" type="email" placeholder="hr@acme.com" required />
-        </FormGroup>
-
-        <p class="section-label">Admin Account</p>
-        <FormGroup label="Your Name">
-          <BaseInput v-model="form.adminName" placeholder="Jane Doe" required />
-        </FormGroup>
-        <FormGroup label="Your Email">
-          <BaseInput v-model="form.adminEmail" type="email" placeholder="jane@acme.com" required />
-        </FormGroup>
-        <FormGroup label="Password">
-          <BaseInput v-model="form.password" type="password" placeholder="Min. 8 characters" required />
-        </FormGroup>
-
-        <p v-if="error" class="error-text">{{ error }}</p>
-        <BaseButton type="submit" :loading="loading" block class="submit-btn">
-          Create account
-        </BaseButton>
+      <form @submit.prevent="handleSubmit" class="login__fields">
+        <div class="field">
+          <label class="field__label">Company name</label>
+          <input class="input" v-model="form.companyName" placeholder="Acme Corp" required />
+        </div>
+        <div class="field">
+          <label class="field__label">Company email</label>
+          <input class="input" type="email" v-model="form.companyEmail" placeholder="hr@acme.com" required />
+        </div>
+        <div class="field">
+          <label class="field__label">Your name</label>
+          <input class="input" v-model="form.adminName" placeholder="Jane Doe" required />
+        </div>
+        <div class="field">
+          <label class="field__label">Your email</label>
+          <input class="input" type="email" v-model="form.adminEmail" placeholder="jane@acme.com" required />
+        </div>
+        <div class="field">
+          <label class="field__label">Password</label>
+          <input class="input" type="password" v-model="form.password" placeholder="Min. 8 characters" required />
+        </div>
+        <p v-if="error" class="error-text" style="margin-top: 4px;">{{ error }}</p>
+        <button type="submit" class="btn btn--primary btn--lg btn--block" :disabled="loading" style="margin-top: 8px;">
+          <span v-if="loading" class="spinner" />
+          {{ loading ? 'Creating workspace…' : 'Create workspace →' }}
+        </button>
       </form>
 
-      <p class="auth-footer">
-        Already have an account? <RouterLink to="/login">Sign in</RouterLink>
+      <p class="login__footer">
+        Already have an account? <RouterLink to="/login">Sign in →</RouterLink>
       </p>
     </div>
   </div>
 </template>
-
-<style scoped>
-h1 { margin-bottom: var(--space-xs); }
-</style>

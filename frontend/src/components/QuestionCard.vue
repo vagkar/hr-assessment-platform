@@ -1,112 +1,52 @@
 <script setup>
-import BaseButton from '@/components/BaseButton.vue'
-
-const TYPE_LABELS = {
-  MULTIPLE_CHOICE: 'Multiple Choice',
-  TRUE_FALSE: 'True / False',
-  OPEN_TEXT: 'Open Text',
-}
-
 defineProps({
   question: { type: Object, required: true },
 })
 
 defineEmits(['edit', 'delete'])
+
+const TYPE_LABELS = {
+  MULTIPLE_CHOICE: 'multiple choice',
+  TRUE_FALSE: 'true / false',
+  OPEN_TEXT: 'open text',
+}
 </script>
 
 <template>
-  <div class="question-card">
-    <div class="question-info">
-      <span class="type-badge">{{ TYPE_LABELS[question.type] ?? question.type }}</span>
-      <p class="question-text">{{ question.text }}</p>
-      <ul v-if="question.options.length" class="options-list">
-        <li v-for="opt in question.options" :key="opt.id" :class="{ correct: opt.isCorrect }">
-          <span class="option-dot" />
+  <div class="qcard">
+    <div class="qcard__n">{{ String(question.orderIndex).padStart(2, '0') }}</div>
+
+    <div class="qcard__body">
+      <span class="eyebrow">{{ TYPE_LABELS[question.type] ?? question.type }}</span>
+      <div class="qcard__text">{{ question.text }}</div>
+
+      <div v-if="question.options.length" class="qcard__opts">
+        <span
+          v-for="opt in question.options"
+          :key="opt.id"
+          :class="['opt', { 'is-correct': opt.isCorrect }]"
+        >
+          <span class="opt__dot" />
           {{ opt.text }}
-        </li>
-      </ul>
+        </span>
+      </div>
+
+      <div v-if="question.type === 'OPEN_TEXT'" style="padding: 12px 14px; background: var(--bg-2); border-radius: 4px; font-style: italic; color: var(--muted); font-size: 13px;">
+        Open text response · reviewed manually
+      </div>
     </div>
-    <div class="question-actions">
-      <BaseButton variant="outline" @click="$emit('edit', question)">Edit</BaseButton>
-      <BaseButton variant="danger" @click="$emit('delete', question.id)">Delete</BaseButton>
+
+    <div class="qcard__tools">
+      <button class="icon-btn" title="Edit" @click="$emit('edit', question)">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 20h4L20 8l-4-4L4 16v4z M14 6l4 4"/>
+        </svg>
+      </button>
+      <button class="icon-btn danger" title="Delete" @click="$emit('delete', question.id)">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+          <path d="M4 7h16M9 7V5a2 2 0 012-2h2a2 2 0 012 2v2m-8 0v13a2 2 0 002 2h6a2 2 0 002-2V7"/>
+        </svg>
+      </button>
     </div>
   </div>
 </template>
-
-<style scoped>
-.question-card {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: var(--space-md);
-}
-
-.question-info { min-width: 0; flex: 1; }
-
-.type-badge {
-  display: inline-block;
-  font-size: 0.6875rem;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: var(--color-primary);
-  background: color-mix(in srgb, var(--color-primary) 10%, transparent);
-  padding: 0.15rem 0.5rem;
-  border-radius: 999px;
-  margin-bottom: var(--space-sm);
-}
-
-.question-text {
-  font-size: 0.9375rem;
-  line-height: 1.5;
-  margin-bottom: var(--space-sm);
-}
-
-.options-list {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-  list-style: none;
-  padding: 0;
-}
-
-.options-list li {
-  display: flex;
-  align-items: center;
-  gap: var(--space-xs);
-  font-size: 0.875rem;
-  color: var(--color-text-muted);
-}
-
-.options-list li.correct {
-  color: var(--color-success);
-  font-weight: 500;
-}
-
-.option-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: currentColor;
-  flex-shrink: 0;
-}
-
-.question-actions {
-  display: flex;
-  gap: var(--space-sm);
-  flex-shrink: 0;
-}
-
-@media (max-width: 640px) {
-  .question-card {
-    flex-direction: column;
-  }
-
-  .question-actions {
-    width: 100%;
-    justify-content: flex-end;
-    padding-top: var(--space-sm);
-    border-top: 1px solid var(--color-border);
-  }
-}
-</style>

@@ -2,8 +2,6 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { getSession, startSession, submitAnswers } from '@/api/candidate'
-import BaseButton from '@/components/BaseButton.vue'
-import BaseInput from '@/components/BaseInput.vue'
 import BrandLogo from '@/components/BrandLogo.vue'
 
 const route = useRoute()
@@ -14,6 +12,7 @@ const session = ref(null)
 const answers = ref({})
 const error = ref(null)
 const loading = ref(false)
+const currentIdx = ref(0)
 
 const timeLeft = ref(0)
 let timerInterval = null
@@ -29,8 +28,8 @@ const timerClass = computed(() => {
   if (!session.value) return ''
   const total = session.value.durationMinutes * 60
   const ratio = timeLeft.value / total
-  if (ratio <= 0.10) return 'timer-urgent'
-  if (ratio <= 0.25) return 'timer-warning'
+  if (ratio <= 0.10) return 'urgent'
+  if (ratio <= 0.25) return 'warn'
   return ''
 })
 
@@ -43,6 +42,7 @@ const answeredCount = computed(() => {
 })
 
 const totalCount = computed(() => session.value?.questions.length ?? 0)
+const currentQuestion = computed(() => session.value?.questions[currentIdx.value])
 
 onMounted(async () => {
   try {
@@ -106,252 +106,185 @@ async function handleSubmit() {
     loading.value = false
   }
 }
+
+function isAnswered(q) {
+  const a = answers.value[q.id]
+  return !!(a?.selectedOptionId || a?.openTextAnswer?.trim())
+}
 </script>
 
 <template>
-  <div class="page candidate-page">
-    <div class="candidate-container">
+  <div class="candidate">
 
-      <div v-if="error && !session" class="card state-card">
-        <p class="state-icon">⚠️</p>
-        <h2>Something went wrong</h2>
-        <p class="text-muted">{{ error }}</p>
-      </div>
-
-      <div v-else-if="!session" class="card state-card">
-        <div class="spinner spinner-centered" />
-        <p class="text-muted">Loading assessment...</p>
-      </div>
-
-      <div v-else>
-        <div class="session-header">
-          <BrandLogo class="session-brand" />
-          <h1>{{ session.assessmentTitle }}</h1>
-          <div class="chips">
-            <span class="chip">{{ session.durationMinutes }} min</span>
-            <span class="chip">{{ totalCount }} questions</span>
-          </div>
-        </div>
-
-        <!-- PENDING -->
-        <div v-if="session.status === 'PENDING'" class="card state-card">
-          <p class="state-icon">📋</p>
-          <h2>Ready to begin?</h2>
-          <p class="text-muted pending-desc">
-            You have <strong>{{ session.durationMinutes }} minutes</strong> to complete
-            <strong>{{ totalCount }} question{{ totalCount !== 1 ? 's' : '' }}</strong>.
-            Once you start, the timer begins.
-          </p>
-          <BaseButton :loading="loading" class="start-btn" @click="handleStart">
-            Start Assessment
-          </BaseButton>
-        </div>
-
-        <!-- IN_PROGRESS -->
-        <form v-else-if="session.status === 'IN_PROGRESS'" @submit.prevent="handleSubmit">
-          <div class="timer-bar">
-            <div class="progress-wrap">
-              <div class="progress-bar">
-                <div class="progress-fill" :style="{ width: `${(answeredCount / totalCount) * 100}%` }" />
-              </div>
-              <span class="progress-count">{{ answeredCount }} / {{ totalCount }}</span>
-            </div>
-            <span :class="['timer', timerClass]">⏱ {{ timeDisplay }}</span>
-          </div>
-
-          <div v-for="(q, index) in session.questions" :key="q.id" class="card question-card">
-            <p class="question-number">Question {{ index + 1 }} of {{ totalCount }}</p>
-            <p class="question-text">{{ q.text }}</p>
-
-            <div v-if="q.type !== 'OPEN_TEXT'" class="options">
-              <label
-                v-for="opt in q.options"
-                :key="opt.id"
-                :class="['option-item', { selected: answers[q.id].selectedOptionId === opt.id }]"
-              >
-                <input type="radio" :name="`question-${q.id}`" :value="opt.id" v-model="answers[q.id].selectedOptionId" class="sr-only" />
-                <span class="option-radio" />
-                <span>{{ opt.text }}</span>
-              </label>
-            </div>
-
-            <BaseInput
-              v-else
-              v-model="answers[q.id].openTextAnswer"
-              :rows="4"
-              placeholder="Write your answer here..."
-              class="open-text-input"
-            />
-          </div>
-
-          <div class="submit-area">
-            <p v-if="error" class="error-text">{{ error }}</p>
-            <p class="submit-count text-muted">{{ answeredCount }} of {{ totalCount }} questions answered</p>
-            <BaseButton type="submit" :loading="loading">Submit Assessment</BaseButton>
-          </div>
-        </form>
-
-        <div v-else-if="session.status === 'COMPLETED'" class="card state-card">
-          <h2>Already submitted</h2>
-          <p class="text-muted">This assessment has already been completed.</p>
-        </div>
+    <!-- Error / Loading -->
+    <div v-if="error && !session" style="display: grid; place-items: center; min-height: 100vh; padding: 40px;">
+      <div style="text-align: center; max-width: 400px;">
+        <div style="font-family: var(--f-display); font-size: 40px; color: var(--bad); margin-bottom: 16px;">⚠</div>
+        <h2 class="display" style="font-size: 28px; margin-bottom: 12px;">Something went wrong</h2>
+        <p style="color: var(--muted);">{{ error }}</p>
       </div>
     </div>
+
+    <div v-else-if="!session" style="display: grid; place-items: center; min-height: 100vh;">
+      <div style="text-align: center; color: var(--muted); font-family: var(--f-mono); font-size: 12px; letter-spacing: 0.1em;">
+        LOADING…
+      </div>
+    </div>
+
+    <template v-else>
+
+      <!-- PENDING — Intro screen -->
+      <template v-if="session.status === 'PENDING'">
+        <div class="cand-top">
+          <div class="cand-top__brand">
+            <BrandLogo to="/" />
+          </div>
+          <div class="cand-top__meta">
+            <span>ASSESSMENT INVITE</span>
+          </div>
+        </div>
+        <div class="cand-main">
+          <div style="max-width: 560px; text-align: center; display: flex; flex-direction: column; gap: 22px; align-items: center;">
+            <span class="eyebrow">Ready when you are</span>
+            <h1 class="display" style="font-size: 52px; line-height: 1.04; letter-spacing: -0.02em; margin: 0;">
+              {{ session.assessmentTitle }}
+            </h1>
+            <p style="color: var(--muted); font-size: 15px; max-width: 44ch;">
+              You have <strong style="color: var(--ink);">{{ session.durationMinutes }} minutes</strong> to answer
+              <strong style="color: var(--ink);">{{ totalCount }} question{{ totalCount !== 1 ? 's' : '' }}</strong>.
+              The timer starts when you press the button below.
+            </p>
+            <div style="display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;">
+              <span class="tag">⏱ {{ session.durationMinutes }} min</span>
+              <span class="tag">{{ totalCount }} questions</span>
+              <span class="tag">Auto-save</span>
+            </div>
+            <button
+              class="btn btn--accent btn--lg"
+              style="margin-top: 20px; padding: 14px 28px;"
+              :disabled="loading"
+              @click="handleStart"
+            >
+              <span v-if="loading" class="spinner" />
+              ▶ Begin assessment
+            </button>
+            <p class="mono" style="font-size: 10.5px; color: var(--faint); letter-spacing: 0.1em;">
+              YOUR ANSWERS ARE AUTO-SAVED
+            </p>
+          </div>
+        </div>
+      </template>
+
+      <!-- IN_PROGRESS — Focus layout (one at a time) -->
+      <template v-else-if="session.status === 'IN_PROGRESS'">
+        <!-- Top bar -->
+        <div class="cand-top">
+          <div class="cand-top__brand">
+            <BrandLogo to="/" />
+            <span style="color: var(--faint); margin-left: 8px;">·</span>
+            <span class="mono" style="font-size: 11px; color: var(--muted); letter-spacing: 0.08em; text-transform: uppercase;">
+              {{ session.assessmentTitle }}
+            </span>
+          </div>
+          <div class="cand-top__meta">
+            <span>{{ answeredCount }} / {{ totalCount }} ANSWERED</span>
+            <div :class="['cand-top__timer', timerClass]">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+              {{ timeDisplay }}
+            </div>
+          </div>
+        </div>
+
+        <!-- Progress bar -->
+        <div class="cand-progress">
+          <div class="cand-progress__fill" :style="{ width: `${(answeredCount / totalCount) * 100}%` }" />
+        </div>
+
+        <!-- Question -->
+        <div class="cand-main" v-if="currentQuestion">
+          <div class="cand-question fade-in" :key="currentQuestion.id">
+            <div class="cand-q__eyebrow">
+              <span class="n">QUESTION {{ String(currentIdx + 1).padStart(2, '0') }} OF {{ String(totalCount).padStart(2, '0') }}</span>
+              <span class="bar" />
+              <span class="mono" style="font-size: 10px; color: var(--muted); letter-spacing: 0.1em;">
+                {{ currentQuestion.type.replace('_', ' ') }}
+              </span>
+            </div>
+
+            <p class="cand-q__text">{{ currentQuestion.text }}</p>
+
+            <div v-if="currentQuestion.type !== 'OPEN_TEXT'" class="cand-opts">
+              <button
+                v-for="(opt, j) in currentQuestion.options"
+                :key="opt.id"
+                :class="['cand-opt', { 'is-selected': answers[currentQuestion.id].selectedOptionId === opt.id }]"
+                @click="answers[currentQuestion.id].selectedOptionId = opt.id"
+              >
+                <span class="cand-opt__key">{{ String.fromCharCode(65 + j) }}</span>
+                <span>{{ opt.text }}</span>
+                <span class="cand-opt__check" />
+              </button>
+            </div>
+
+            <textarea
+              v-else
+              class="input"
+              rows="6"
+              placeholder="Write your answer here…"
+              v-model="answers[currentQuestion.id].openTextAnswer"
+            />
+          </div>
+        </div>
+
+        <!-- Bottom nav -->
+        <div class="cand-foot">
+          <button
+            class="btn btn--ghost"
+            :disabled="currentIdx === 0"
+            @click="currentIdx--"
+          >
+            ← Previous
+          </button>
+
+          <div class="cand-foot__dots">
+            <button
+              v-for="(q, i) in session.questions"
+              :key="q.id"
+              :class="['cand-dot', { answered: isAnswered(q), current: i === currentIdx }]"
+              @click="currentIdx = i"
+            >{{ i + 1 }}</button>
+          </div>
+
+          <div style="display: flex; gap: 8px; align-items: center;">
+            <p v-if="error" class="error-text">{{ error }}</p>
+            <button
+              v-if="currentIdx === totalCount - 1"
+              class="btn btn--accent"
+              :disabled="loading"
+              @click="handleSubmit"
+            >
+              <span v-if="loading" class="spinner" />
+              Submit →
+            </button>
+            <button
+              v-else
+              class="btn btn--primary"
+              @click="currentIdx++"
+            >
+              Next →
+            </button>
+          </div>
+        </div>
+      </template>
+
+      <!-- COMPLETED -->
+      <div v-else-if="session.status === 'COMPLETED'" style="display: grid; place-items: center; min-height: 100vh; padding: 40px;">
+        <div style="text-align: center; max-width: 400px;">
+          <h2 class="display" style="font-size: 32px; margin-bottom: 12px;">Already submitted</h2>
+          <p style="color: var(--muted);">This assessment has already been completed.</p>
+        </div>
+      </div>
+
+    </template>
   </div>
 </template>
-
-<style scoped>
-.candidate-page {
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-}
-
-.candidate-container {
-  max-width: 680px;
-  width: 100%;
-  margin: 0 auto;
-}
-
-.state-card { text-align: center; }
-.state-icon { font-size: 2rem; margin-bottom: var(--space-md); }
-.spinner-centered { margin: 0 auto var(--space-md); }
-
-.session-header {
-  text-align: center;
-  margin-bottom: var(--space-xl);
-}
-
-.session-brand { margin-bottom: var(--space-lg); }
-.session-header h1 { margin-bottom: var(--space-sm); }
-
-.pending-desc { margin-top: var(--space-xs); }
-.start-btn { margin-top: var(--space-lg); }
-
-.chips {
-  display: flex;
-  justify-content: center;
-  gap: var(--space-sm);
-}
-
-.timer-bar {
-  display: flex;
-  align-items: center;
-  gap: var(--space-md);
-  margin-bottom: var(--space-lg);
-  position: sticky;
-  top: 68px;
-  background: var(--color-bg);
-  padding: var(--space-sm) 0;
-  z-index: 10;
-}
-
-.timer {
-  font-size: 0.9375rem;
-  font-weight: 700;
-  font-variant-numeric: tabular-nums;
-  white-space: nowrap;
-  color: var(--color-text-muted);
-  flex-shrink: 0;
-}
-
-.timer-warning { color: var(--color-warning); }
-.timer-urgent  { color: var(--color-danger); animation: pulse 1s ease-in-out infinite; }
-
-@keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50%       { opacity: 0.5; }
-}
-
-.progress-wrap {
-  display: flex;
-  align-items: center;
-  gap: var(--space-md);
-  flex: 1;
-}
-
-.progress-bar {
-  flex: 1;
-  height: 6px;
-  background: var(--color-border);
-  border-radius: 999px;
-  overflow: hidden;
-}
-
-.progress-fill {
-  height: 100%;
-  background: var(--color-primary);
-  border-radius: 999px;
-  transition: width 0.3s ease;
-}
-
-.question-card { margin-bottom: var(--space-md); }
-
-.question-number {
-  font-size: 0.75rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--color-primary);
-  margin-bottom: var(--space-sm);
-}
-
-.question-text {
-  font-size: 1.0625rem;
-  font-weight: 500;
-  margin-bottom: var(--space-lg);
-}
-
-.options {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-sm);
-}
-
-.option-item {
-  display: flex;
-  align-items: center;
-  gap: var(--space-md);
-  padding: var(--space-md);
-  border: 1.5px solid var(--color-border);
-  border-radius: var(--radius);
-  cursor: pointer;
-  transition: border-color var(--transition), background var(--transition);
-}
-
-.option-item:hover { border-color: var(--color-primary); background: color-mix(in srgb, var(--color-primary) 5%, transparent); }
-.option-item.selected { border-color: var(--color-primary); background: color-mix(in srgb, var(--color-primary) 8%, transparent); }
-
-.option-radio {
-  width: 18px;
-  height: 18px;
-  border: 2px solid var(--color-border);
-  border-radius: 50%;
-  flex-shrink: 0;
-  transition: border-color var(--transition);
-}
-
-.option-item.selected .option-radio {
-  border-color: var(--color-primary);
-  background: var(--color-primary);
-  box-shadow: inset 0 0 0 3px var(--color-bg-card);
-}
-
-.progress-count {
-  white-space: nowrap;
-  font-size: 0.8125rem;
-  color: var(--color-text-muted);
-}
-
-.open-text-input { margin-top: var(--space-sm); }
-.submit-count { font-size: 0.875rem; }
-
-.submit-area {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: var(--space-sm);
-  padding-top: var(--space-lg);
-  border-top: 1px solid var(--color-border);
-}
-</style>
