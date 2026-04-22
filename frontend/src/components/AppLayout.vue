@@ -1,37 +1,33 @@
 <script setup>
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
-import { useThemeStore } from '@/stores/theme'
 import BrandLogo from '@/components/BrandLogo.vue'
+import ThemeToggle from '@/components/ThemeToggle.vue'
 
 const router = useRouter()
 const authStore = useAuthStore()
-const themeStore = useThemeStore()
-
 function logout() {
   authStore.logout()
   router.push('/login')
 }
+
+
 </script>
 
 <template>
-  <div class="layout">
-    <nav class="navbar">
-      <RouterLink to="/dashboard" class="navbar-brand">
-        <BrandLogo />
-      </RouterLink>
-      <div class="navbar-actions">
-        <span class="user-email">{{ authStore.user?.email }}</span>
-        <button
-          class="btn btn-outline icon-btn"
-          :title="themeStore.isDark ? 'Switch to light' : 'Switch to dark'"
-          @click="themeStore.toggle"
-        >
-          {{ themeStore.isDark ? '☀️' : '🌙' }}
-        </button>
-        <button class="btn btn-outline" @click="logout">Logout</button>
+  <div class="app">
+    <header class="topbar">
+      <BrandLogo class="topbar__brand" />
+
+      <div class="topbar__nav" />
+
+      <div class="topbar__right">
+        <span class="user-meta">{{ authStore.user?.email }}</span>
+        <ThemeToggle />
+        <button class="btn btn--ghost btn--sm" @click="logout">Sign out</button>
       </div>
-    </nav>
+    </header>
+
     <main class="page">
       <RouterView />
     </main>
@@ -39,47 +35,15 @@ function logout() {
 </template>
 
 <style scoped>
-.navbar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0 var(--space-xl);
-  height: 60px;
-  background: var(--color-bg-card);
-  border-bottom: 1px solid var(--color-border);
-  position: sticky;
-  top: 0;
-  z-index: 100;
-  backdrop-filter: blur(8px);
-}
-
-.navbar-brand { text-decoration: none; }
-
-.navbar-actions {
-  display: flex;
-  align-items: center;
-  gap: var(--space-sm);
-}
-
-.user-email {
-  font-size: 0.8125rem;
-  color: var(--color-text-muted);
-  margin-right: var(--space-xs);
-}
-
-.icon-btn {
-  padding: 0.4375rem 0.5625rem;
-  font-size: 0.9375rem;
-  line-height: 1;
+.user-meta {
+  font-family: var(--f-mono);
+  font-size: 11px;
+  color: var(--muted);
+  letter-spacing: 0.04em;
 }
 
 @media (max-width: 640px) {
-  .navbar {
-    padding: 0 var(--space-md);
-  }
-
-  .user-email {
-    display: none;
-  }
+  .user-meta { display: none; }
 }
+
 </style>
