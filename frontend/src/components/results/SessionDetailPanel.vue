@@ -1,7 +1,7 @@
 <script setup>
 import { scoreTag } from '@/utils/score'
-import BaseButton from '@/components/BaseButton.vue'
-import BaseCard from '@/components/BaseCard.vue'
+import BaseButton from '@/components/ui/BaseButton.vue'
+import BaseCard from '@/components/ui/BaseCard.vue'
 
 defineProps({
   session: { type: Object, required: true },

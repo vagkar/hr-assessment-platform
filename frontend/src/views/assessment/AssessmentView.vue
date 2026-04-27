@@ -8,7 +8,7 @@ import QuestionForm from '@/components/assessment/QuestionForm.vue'
 import AssessmentSettings from '@/components/assessment/AssessmentSettings.vue'
 import InviteForm from '@/components/assessment/InviteForm.vue'
 import InviteBanner from '@/components/assessment/InviteBanner.vue'
-import BaseButton from '@/components/BaseButton.vue'
+import BaseButton from '@/components/ui/BaseButton.vue'
 
 const route = useRoute()
 const router = useRouter()

@@ -32,7 +32,7 @@ const router = createRouter({
     },
     {
       path: '/',
-      component: () => import('@/components/AppLayout.vue'),
+      component: () => import('@/components/layout/AppLayout.vue'),
       children: [
         {
           path: 'dashboard',

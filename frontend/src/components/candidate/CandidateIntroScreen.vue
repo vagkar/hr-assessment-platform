@@ -1,6 +1,6 @@
 <script setup>
-import BrandLogo from '@/components/BrandLogo.vue'
-import ThemeToggle from '@/components/ThemeToggle.vue'
+import BrandLogo from '@/components/layout/BrandLogo.vue'
+import ThemeToggle from '@/components/layout/ThemeToggle.vue'
 
 defineProps({
   session: { type: Object, required: true },

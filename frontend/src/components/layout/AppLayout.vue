@@ -1,9 +1,9 @@
 <script setup>
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
-import BrandLogo from '@/components/BrandLogo.vue'
-import ThemeToggle from '@/components/ThemeToggle.vue'
-import BaseButton from '@/components/BaseButton.vue'
+import BrandLogo from '@/components/layout/BrandLogo.vue'
+import ThemeToggle from '@/components/layout/ThemeToggle.vue'
+import BaseButton from '@/components/ui/BaseButton.vue'
 
 const router = useRouter()
 const authStore = useAuthStore()

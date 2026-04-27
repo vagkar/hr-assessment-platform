@@ -1,7 +1,7 @@
 <script setup>
 import { ref } from 'vue'
-import BaseButton from '@/components/BaseButton.vue'
-import BaseCard from '@/components/BaseCard.vue'
+import BaseButton from '@/components/ui/BaseButton.vue'
+import BaseCard from '@/components/ui/BaseCard.vue'
 
 const props = defineProps({
   inviteToken: { type: String, required: true },

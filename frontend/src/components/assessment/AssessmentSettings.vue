@@ -2,9 +2,9 @@
 import { ref, computed, watch } from 'vue'
 import { updateAssessment } from '@/api/assessments'
 import { useAssessmentStore } from '@/stores/assessment'
-import BaseButton from '@/components/BaseButton.vue'
-import BaseCard from '@/components/BaseCard.vue'
-import BaseInput from '@/components/BaseInput.vue'
+import BaseButton from '@/components/ui/BaseButton.vue'
+import BaseCard from '@/components/ui/BaseCard.vue'
+import BaseInput from '@/components/ui/BaseInput.vue'
 
 const props = defineProps({
   assessmentId: { type: Number, required: true },

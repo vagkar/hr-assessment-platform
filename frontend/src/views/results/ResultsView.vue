@@ -2,8 +2,8 @@
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { getResults, getSessionDetail } from '@/api/results'
-import ResultRow from '@/components/assessment/ResultRow.vue'
-import SessionDetailPanel from '@/components/assessment/SessionDetailPanel.vue'
+import ResultRow from '@/components/results/ResultRow.vue'
+import SessionDetailPanel from '@/components/results/SessionDetailPanel.vue'
 
 const route = useRoute()
 const router = useRouter()

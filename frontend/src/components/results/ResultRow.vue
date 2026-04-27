@@ -1,6 +1,6 @@
 <script setup>
 import { scoreTag } from '@/utils/score'
-import BaseButton from '@/components/BaseButton.vue'
+import BaseButton from '@/components/ui/BaseButton.vue'
 
 defineProps({
   result: { type: Object, required: true },

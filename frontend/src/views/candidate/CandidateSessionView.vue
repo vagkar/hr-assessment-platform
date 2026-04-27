@@ -2,7 +2,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { getSession, startSession, submitAnswers } from '@/api/candidate'
-import CenteredState from '@/components/CenteredState.vue'
+import CenteredState from '@/components/ui/CenteredState.vue'
 import CandidateIntroScreen from '@/components/candidate/CandidateIntroScreen.vue'
 import CandidateQuizScreen from '@/components/candidate/CandidateQuizScreen.vue'
 

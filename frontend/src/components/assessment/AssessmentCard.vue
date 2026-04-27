@@ -1,6 +1,6 @@
 <script setup>
 import { useRouter } from 'vue-router'
-import BaseButton from '@/components/BaseButton.vue'
+import BaseButton from '@/components/ui/BaseButton.vue'
 
 defineProps({
   assessment: { type: Object, required: true },
