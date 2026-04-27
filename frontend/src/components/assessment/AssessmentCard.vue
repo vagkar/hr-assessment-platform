@@ -1,5 +1,6 @@
 <script setup>
 import { useRouter } from 'vue-router'
+import BaseButton from '@/components/BaseButton.vue'
 
 defineProps({
   assessment: { type: Object, required: true },
@@ -30,8 +31,8 @@ const router = useRouter()
     </div>
 
     <div class="arow__actions" @click.stop>
-      <button class="btn btn--ghost btn--sm" @click="$emit('edit', assessment)">Edit</button>
-      <button class="btn btn--danger btn--sm" @click="$emit('delete', assessment.id)">Delete</button>
+      <BaseButton variant="ghost" sm @click="$emit('edit', assessment)">Edit</BaseButton>
+      <BaseButton variant="danger" sm @click="$emit('delete', assessment.id)">Delete</BaseButton>
     </div>
   </div>
 </template>

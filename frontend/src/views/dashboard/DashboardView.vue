@@ -3,6 +3,9 @@ import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAssessmentStore } from '@/stores/assessment'
 import AssessmentCard from '@/components/assessment/AssessmentCard.vue'
+import BaseButton from '@/components/BaseButton.vue'
+import BaseCard from '@/components/BaseCard.vue'
+import BaseInput from '@/components/BaseInput.vue'
 
 const router = useRouter()
 const assessmentStore = useAssessmentStore()
@@ -47,30 +50,28 @@ async function handleDelete(id) {
         <p class="page__subtitle">Create timed screens and invite candidates to take them.</p>
       </div>
       <div class="page__actions">
-        <button v-if="!showForm" class="btn btn--primary" @click="showForm = true">
-          + New assessment
-        </button>
-        <button v-else class="btn btn--ghost" @click="cancelForm">Cancel</button>
+        <BaseButton v-if="!showForm" variant="primary" @click="showForm = true">+ New assessment</BaseButton>
+        <BaseButton v-else variant="ghost" @click="cancelForm">Cancel</BaseButton>
       </div>
     </header>
 
     <!-- New assessment form -->
-    <div v-if="showForm" class="card fade-in create-card">
+    <BaseCard v-if="showForm" class="fade-in create-card">
       <h2 class="display create-card__title">New assessment</h2>
       <form @submit.prevent="handleSubmit">
         <div class="form-row create-card__row">
           <div class="field">
             <label class="field__label">Title</label>
-            <input class="input" v-model="form.title" placeholder="e.g. Senior Frontend Engineer" required />
+            <BaseInput v-model="form.title" placeholder="e.g. Senior Frontend Engineer" required />
           </div>
           <div class="field">
             <label class="field__label">Duration (minutes)</label>
-            <input class="input" type="number" v-model="form.durationMinutes" min="1" required />
+            <BaseInput type="number" v-model.number="form.durationMinutes" :min="1" required />
           </div>
         </div>
         <div class="field create-card__field">
           <label class="field__label">Description</label>
-          <input class="input" v-model="form.description" placeholder="Short summary candidates will see before starting" />
+          <BaseInput v-model="form.description" placeholder="Short summary candidates will see before starting" />
         </div>
         <div class="checkbox-row create-card__checkbox">
           <input type="checkbox" id="isActive" v-model="form.isActive" />
@@ -78,20 +79,17 @@ async function handleDelete(id) {
         </div>
         <p v-if="error" class="error-text create-card__error">{{ error }}</p>
         <div class="form-actions">
-          <button type="button" class="btn btn--ghost" @click="cancelForm">Cancel</button>
-          <button type="submit" class="btn btn--primary" :disabled="loading">
-            <span v-if="loading" class="spinner" />
-            Create →
-          </button>
+          <BaseButton type="button" variant="ghost" @click="cancelForm">Cancel</BaseButton>
+          <BaseButton type="submit" variant="primary" :loading="loading">Create →</BaseButton>
         </div>
       </form>
-    </div>
+    </BaseCard>
 
     <!-- Empty state -->
     <div v-if="assessmentStore.assessments.length === 0 && !showForm" class="empty-state">
       <p class="empty-title">No assessments yet</p>
       <p class="text-muted">Create your first assessment to start evaluating candidates.</p>
-      <button class="btn btn--primary" @click="showForm = true">+ New assessment</button>
+      <BaseButton variant="primary" @click="showForm = true">+ New assessment</BaseButton>
     </div>
 
     <!-- Assessment list -->

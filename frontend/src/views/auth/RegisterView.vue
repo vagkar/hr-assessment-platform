@@ -3,6 +3,8 @@ import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import BrandLogo from '@/components/BrandLogo.vue'
+import BaseButton from '@/components/BaseButton.vue'
+import BaseInput from '@/components/BaseInput.vue'
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -52,29 +54,28 @@ async function handleSubmit() {
       <form @submit.prevent="handleSubmit" class="login__fields">
         <div class="field">
           <label class="field__label">Company name</label>
-          <input class="input" v-model="form.companyName" placeholder="Acme Corp" required />
+          <BaseInput v-model="form.companyName" placeholder="Acme Corp" required />
         </div>
         <div class="field">
           <label class="field__label">Company email</label>
-          <input class="input" type="email" v-model="form.companyEmail" placeholder="hr@acme.com" required />
+          <BaseInput type="email" v-model="form.companyEmail" placeholder="hr@acme.com" required />
         </div>
         <div class="field">
           <label class="field__label">Your name</label>
-          <input class="input" v-model="form.adminName" placeholder="Jane Doe" required />
+          <BaseInput v-model="form.adminName" placeholder="Jane Doe" required />
         </div>
         <div class="field">
           <label class="field__label">Your email</label>
-          <input class="input" type="email" v-model="form.adminEmail" placeholder="jane@acme.com" required />
+          <BaseInput type="email" v-model="form.adminEmail" placeholder="jane@acme.com" required />
         </div>
         <div class="field">
           <label class="field__label">Password</label>
-          <input class="input" type="password" v-model="form.password" placeholder="Min. 8 characters" required />
+          <BaseInput type="password" v-model="form.password" placeholder="Min. 8 characters" required />
         </div>
         <p v-if="error" class="error-text">{{ error }}</p>
-        <button type="submit" class="btn btn--primary btn--lg btn--block" :disabled="loading">
-          <span v-if="loading" class="spinner" />
+        <BaseButton type="submit" variant="primary" block :loading="loading" class="btn--lg">
           {{ loading ? 'Creating workspace…' : 'Create workspace →' }}
-        </button>
+        </BaseButton>
       </form>
 
       <p class="login__footer">

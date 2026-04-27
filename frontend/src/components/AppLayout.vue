@@ -3,6 +3,7 @@ import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import BrandLogo from '@/components/BrandLogo.vue'
 import ThemeToggle from '@/components/ThemeToggle.vue'
+import BaseButton from '@/components/BaseButton.vue'
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -24,7 +25,7 @@ function logout() {
       <div class="topbar__right">
         <span class="user-meta">{{ authStore.user?.email }}</span>
         <ThemeToggle />
-        <button class="btn btn--ghost btn--sm" @click="logout">Sign out</button>
+        <BaseButton variant="ghost" sm @click="logout">Sign out</BaseButton>
       </div>
     </header>
 

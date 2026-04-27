@@ -2,6 +2,9 @@
 import { ref, computed, watch } from 'vue'
 import { updateAssessment } from '@/api/assessments'
 import { useAssessmentStore } from '@/stores/assessment'
+import BaseButton from '@/components/BaseButton.vue'
+import BaseCard from '@/components/BaseCard.vue'
+import BaseInput from '@/components/BaseInput.vue'
 
 const props = defineProps({
   assessmentId: { type: Number, required: true },
@@ -55,32 +58,31 @@ async function handleSave() {
 </script>
 
 <template>
-  <div class="settings-card card">
+  <BaseCard class="settings-card">
     <div class="eyebrow settings-card__label">Settings</div>
     <form v-if="form" @submit.prevent="handleSave">
       <div class="field settings-card__field">
         <label class="field__label">Title</label>
-        <input class="input" v-model="form.title" required />
+        <BaseInput v-model="form.title" required />
       </div>
       <div class="field settings-card__field">
         <label class="field__label">Description</label>
-        <textarea class="input" v-model="form.description" rows="2" />
+        <BaseInput v-model="form.description" :rows="2" />
       </div>
       <div class="field settings-card__field">
         <label class="field__label">Duration (minutes)</label>
-        <input class="input" type="number" min="1" v-model.number="form.durationMinutes" required />
+        <BaseInput type="number" :min="1" v-model.number="form.durationMinutes" required />
       </div>
       <div class="checkbox-row settings-card__checkbox">
         <input type="checkbox" id="settings-isActive" v-model="form.isActive" />
         <label for="settings-isActive">Active</label>
       </div>
       <p v-if="error" class="error-text settings-card__error">{{ error }}</p>
-      <button type="submit" class="btn btn--primary btn--sm btn--block" :disabled="loading || !changed">
-        <span v-if="loading" class="spinner" />
+      <BaseButton type="submit" variant="primary" sm block :loading="loading" :disabled="!changed">
         {{ saved ? '✓ Saved' : 'Save changes' }}
-      </button>
+      </BaseButton>
     </form>
-  </div>
+  </BaseCard>
 </template>
 
 <style scoped>

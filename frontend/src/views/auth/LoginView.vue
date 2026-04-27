@@ -3,6 +3,8 @@ import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import BrandLogo from '@/components/BrandLogo.vue'
+import BaseButton from '@/components/BaseButton.vue'
+import BaseInput from '@/components/BaseInput.vue'
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -47,17 +49,16 @@ async function handleSubmit() {
       <form @submit.prevent="handleSubmit" class="login__fields">
         <div class="field">
           <label class="field__label">Work email</label>
-          <input class="input" type="email" v-model="email" placeholder="you@company.com" required />
+          <BaseInput type="email" v-model="email" placeholder="you@company.com" required />
         </div>
         <div class="field">
           <label class="field__label">Password</label>
-          <input class="input" type="password" v-model="password" placeholder="••••••••" required />
+          <BaseInput type="password" v-model="password" placeholder="••••••••" required />
         </div>
         <p v-if="error" class="error-text">{{ error }}</p>
-        <button type="submit" class="btn btn--primary btn--lg btn--block" :disabled="loading">
-          <span v-if="loading" class="spinner" />
+        <BaseButton type="submit" variant="primary" block :loading="loading" class="btn--lg">
           {{ loading ? 'Signing in…' : 'Sign in →' }}
-        </button>
+        </BaseButton>
       </form>
 
       <p class="login__footer">

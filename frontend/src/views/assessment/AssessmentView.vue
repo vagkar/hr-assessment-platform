@@ -3,10 +3,12 @@ import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAssessmentStore } from '@/stores/assessment'
 import { getQuestions, deleteQuestion } from '@/api/questions'
-import { createInvite } from '@/api/assessments'
 import QuestionCard from '@/components/assessment/QuestionCard.vue'
 import QuestionForm from '@/components/assessment/QuestionForm.vue'
 import AssessmentSettings from '@/components/assessment/AssessmentSettings.vue'
+import InviteForm from '@/components/assessment/InviteForm.vue'
+import InviteBanner from '@/components/assessment/InviteBanner.vue'
+import BaseButton from '@/components/BaseButton.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -20,14 +22,7 @@ const showQuestionForm = ref(false)
 const editingQuestion = ref(null)
 
 const showInviteForm = ref(false)
-const inviteForm = ref({ candidateName: '', candidateEmail: '' })
 const inviteResult = ref(null)
-const copied = ref(false)
-
-const error = ref(null)
-const loading = ref(false)
-
-const appUrl = import.meta.env.VITE_APP_URL
 
 onMounted(async () => {
   if (assessmentStore.assessments.length === 0) await assessmentStore.fetchAll()
@@ -53,7 +48,6 @@ function openNewQuestion() {
 function closeQuestionForm() {
   showQuestionForm.value = false
   editingQuestion.value = null
-  error.value = null
 }
 
 async function handleQuestionSaved() {
@@ -67,29 +61,9 @@ async function handleDeleteQuestion(id) {
   await loadQuestions()
 }
 
-async function handleInvite() {
-  error.value = null
-  loading.value = true
-  try {
-    const res = await createInvite(assessmentId, inviteForm.value)
-    inviteResult.value = res.data
-    inviteForm.value = { candidateName: '', candidateEmail: '' }
-    showInviteForm.value = false
-    await navigator.clipboard.writeText(`${appUrl}/candidate/${res.data.inviteToken}`)
-    copied.value = true
-    setTimeout(() => (copied.value = false), 2000)
-  } catch (e) {
-    error.value = e.response?.data?.message || 'Failed to create invite'
-  } finally {
-    loading.value = false
-  }
-}
-
-async function copyInviteLink() {
-  const link = `${appUrl}/candidate/${inviteResult.value.inviteToken}`
-  await navigator.clipboard.writeText(link)
-  copied.value = true
-  setTimeout(() => (copied.value = false), 2000)
+function onInviteSent(result) {
+  inviteResult.value = result
+  showInviteForm.value = false
 }
 
 function onSettingsSaved(updated) {
@@ -118,82 +92,47 @@ function onSettingsSaved(updated) {
           </div>
         </div>
         <div class="page__actions">
-          <button class="btn btn--ghost" @click="router.push(`/assessments/${assessmentId}/results`)">
+          <BaseButton variant="ghost" @click="router.push(`/assessments/${assessmentId}/results`)">
             View results →
-          </button>
-          <button class="btn btn--ghost" @click="showInviteForm = !showInviteForm">
+          </BaseButton>
+          <BaseButton variant="ghost" @click="showInviteForm = !showInviteForm">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg>
             {{ showInviteForm ? 'Cancel' : 'Send invite' }}
-          </button>
-          <button
-            class="btn btn--primary"
+          </BaseButton>
+          <BaseButton
+            variant="primary"
             @click="showQuestionForm ? closeQuestionForm() : openNewQuestion()"
           >
             {{ showQuestionForm ? 'Cancel' : '+ Add question' }}
-          </button>
+          </BaseButton>
         </div>
       </header>
 
-      <!-- Invite form -->
-      <div v-if="showInviteForm" class="card fade-in invite-form">
-        <div class="invite-form__header">
-          <h2 class="display invite-form__title">Send invite</h2>
-          <span class="eyebrow">Candidate receives a unique link</span>
-        </div>
-        <form @submit.prevent="handleInvite">
-          <div class="form-row invite-form__row">
-            <div class="field">
-              <label class="field__label">Candidate name</label>
-              <input class="input" v-model="inviteForm.candidateName" placeholder="Jane Doe" required />
-            </div>
-            <div class="field">
-              <label class="field__label">Email</label>
-              <input class="input" type="email" v-model="inviteForm.candidateEmail" placeholder="jane@example.com" required />
-            </div>
-          </div>
-          <div class="form-actions">
-            <button type="button" class="btn btn--ghost" @click="showInviteForm = false">Cancel</button>
-            <button type="submit" class="btn btn--primary" :disabled="loading">
-              <span v-if="loading" class="spinner" />
-              Send invite
-            </button>
-          </div>
-        </form>
-      </div>
+      <InviteForm
+        v-if="showInviteForm"
+        :assessment-id="assessmentId"
+        @sent="onInviteSent"
+        @cancel="showInviteForm = false"
+      />
 
-      <!-- Invite result banner -->
-      <div v-if="inviteResult" class="card fade-in invite-banner">
-        <div class="invite-banner__body">
-          <div class="invite-banner__check">✓</div>
-          <div>
-            <div class="invite-banner__label">Invite sent to {{ inviteResult.inviteToken ? 'candidate' : '' }}</div>
-            <div class="mono invite-banner__url">
-              {{ appUrl }}/candidate/{{ inviteResult.inviteToken }}
-            </div>
-          </div>
-        </div>
-        <div class="invite-banner__actions">
-          <button class="btn btn--ghost btn--sm" @click="copyInviteLink">
-            {{ copied ? '✓ Copied' : 'Copy link' }}
-          </button>
-          <button class="btn btn--link btn--sm" @click="inviteResult = null">✕</button>
-        </div>
-      </div>
+      <InviteBanner
+        v-if="inviteResult"
+        :invite-token="inviteResult.inviteToken"
+        @dismiss="inviteResult = null"
+      />
 
       <!-- Two-column layout -->
       <div class="twocol">
         <div>
-          <!-- Question form -->
           <QuestionForm
             v-if="showQuestionForm"
-            :assessmentId="assessmentId"
-            :editingQuestion="editingQuestion"
-            :nextOrderIndex="questions.length + 1"
+            :assessment-id="assessmentId"
+            :editing-question="editingQuestion"
+            :next-order-index="questions.length + 1"
             @saved="handleQuestionSaved"
             @cancel="closeQuestionForm"
           />
 
-          <!-- Questions list -->
           <div class="section">
             <h2>Questions</h2>
             <span class="section__eyebrow">
@@ -216,10 +155,9 @@ function onSettingsSaved(updated) {
           </div>
         </div>
 
-        <!-- Sidebar -->
         <aside class="twocol__side">
           <AssessmentSettings
-            :assessmentId="assessmentId"
+            :assessment-id="assessmentId"
             :assessment="assessment"
             @saved="onSettingsSaved"
           />
@@ -232,46 +170,4 @@ function onSettingsSaved(updated) {
 <style scoped>
 .asmview__tags { display: flex; gap: 8px; margin-top: 14px; flex-wrap: wrap; }
 .asmview__empty { padding: 48px 20px; }
-
-.invite-form { padding: 24px; margin-bottom: 22px; }
-.invite-form__header { display: flex; align-items: baseline; gap: 12px; margin-bottom: 18px; }
-.invite-form__title { font-size: 24px; margin: 0; }
-.invite-form__row { margin-bottom: 18px; }
-
-.invite-banner {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  padding: 18px 22px;
-  margin-bottom: 22px;
-  background: color-mix(in srgb, var(--ok) 8%, var(--surface));
-  border-color: color-mix(in srgb, var(--ok) 25%, var(--rule));
-}
-.invite-banner__body { display: flex; align-items: center; gap: 14px; }
-.invite-banner__check {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  background: var(--ok);
-  color: #fff;
-  display: grid;
-  place-items: center;
-  flex-shrink: 0;
-}
-.invite-banner__label { font-weight: 500; }
-.invite-banner__url {
-  font-size: 11px;
-  color: var(--muted);
-  margin-top: 2px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  max-width: 400px;
-}
-.invite-banner__actions { display: flex; gap: 8px; flex-shrink: 0; }
-
-@media (max-width: 640px) {
-  .invite-banner { flex-direction: column; align-items: flex-start; }
-}
 </style>

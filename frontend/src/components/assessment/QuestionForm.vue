@@ -1,6 +1,9 @@
 <script setup>
 import { ref, watch } from 'vue'
 import { createQuestion, updateQuestion } from '@/api/questions'
+import BaseButton from '@/components/BaseButton.vue'
+import BaseCard from '@/components/BaseCard.vue'
+import BaseInput from '@/components/BaseInput.vue'
 
 const props = defineProps({
   assessmentId: { type: Number, required: true },
@@ -64,7 +67,7 @@ async function handleSubmit() {
 </script>
 
 <template>
-  <div class="qform card fade-in">
+  <BaseCard class="qform fade-in">
     <div class="qform__header">
       <h2 class="display qform__title">
         {{ editingQuestion ? 'Edit question' : 'New question' }}
@@ -83,7 +86,7 @@ async function handleSubmit() {
     <form @submit.prevent="handleSubmit">
       <div class="field qform__field">
         <label class="field__label">Question text</label>
-        <textarea class="input" v-model="form.text" rows="3" placeholder="Write your question…" required />
+        <BaseInput v-model="form.text" :rows="3" placeholder="Write your question…" required />
       </div>
 
       <div v-if="form.type !== 'OPEN_TEXT'" class="field qform__field">
@@ -95,30 +98,29 @@ async function handleSubmit() {
               :class="['icon-btn', { 'is-correct': opt.isCorrect }]"
               @click="toggleCorrect(i)"
             >✓</button>
-            <input class="input" v-model="opt.text" :placeholder="`Option ${i + 1}`" />
+            <BaseInput v-model="opt.text" :placeholder="`Option ${i + 1}`" />
             <button type="button" class="icon-btn danger" @click="removeOption(i)">✕</button>
           </div>
           <div class="qform__new-opt">
-            <input class="input" v-model="newOption.text" placeholder="New option…" @keydown.enter.prevent="addOption" />
+            <BaseInput v-model="newOption.text" placeholder="New option…" @keydown.enter.prevent="addOption" />
             <label class="qform__correct-label">
               <input type="checkbox" v-model="newOption.isCorrect" />
               Correct
             </label>
-            <button type="button" class="btn btn--ghost btn--sm" @click="addOption">Add</button>
+            <BaseButton type="button" variant="ghost" sm @click="addOption">Add</BaseButton>
           </div>
         </div>
       </div>
 
       <p v-if="error" class="error-text qform__error">{{ error }}</p>
       <div class="form-actions">
-        <button type="button" class="btn btn--ghost" @click="emit('cancel')">Cancel</button>
-        <button type="submit" class="btn btn--primary" :disabled="loading">
-          <span v-if="loading" class="spinner" />
+        <BaseButton type="button" variant="ghost" @click="emit('cancel')">Cancel</BaseButton>
+        <BaseButton type="submit" variant="primary" :loading="loading">
           {{ editingQuestion ? 'Save changes' : 'Save question' }}
-        </button>
+        </BaseButton>
       </div>
     </form>
-  </div>
+  </BaseCard>
 </template>
 
 <style scoped>

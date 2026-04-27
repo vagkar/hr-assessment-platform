@@ -284,6 +284,9 @@ h2 { font-family: var(--f-display); font-weight: 400; font-size: 1.5rem; letter-
 }
 .input::placeholder { color: var(--faint); }
 .input:disabled { opacity: 0.5; cursor: not-allowed; }
+.input[type="number"]::-webkit-outer-spin-button,
+.input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.input[type="number"] { -moz-appearance: textfield; }
 
 .field { display: flex; flex-direction: column; gap: 6px; }
 .form-actions { display: flex; justify-content: flex-end; gap: 8px; }
@@ -769,8 +772,9 @@ input[type="checkbox"]:focus-visible {
   .twocol { grid-template-columns: 1fr; }
   .twocol__side { position: static; }
   .page__inner { padding: 24px 20px 60px; }
-  .page__header { flex-direction: column; align-items: flex-start; }
+  .page__header { flex-direction: column; align-items: flex-start; gap: 16px; }
   .page__title h1 { font-size: 36px; }
+  .page__actions { flex-wrap: wrap; }
   .cand-main { padding: 40px 20px; }
   .cand-q__text { font-size: 26px; }
   .cand-top { padding: 16px 20px; }
