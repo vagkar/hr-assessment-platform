@@ -1,42 +1,24 @@
 <script setup>
 import { ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { useAssessmentStore } from '@/stores/assessment'
-import BaseButton from '@/components/BaseButton.vue'
-import BaseCard from '@/components/BaseCard.vue'
-import BaseInput from '@/components/BaseInput.vue'
-import FormGroup from '@/components/FormGroup.vue'
-import AssessmentCard from '@/components/AssessmentCard.vue'
+import AssessmentCard from '@/components/assessment/AssessmentCard.vue'
+import BaseButton from '@/components/ui/BaseButton.vue'
+import BaseCard from '@/components/ui/BaseCard.vue'
+import BaseInput from '@/components/ui/BaseInput.vue'
 
+const router = useRouter()
 const assessmentStore = useAssessmentStore()
 
 const showForm = ref(false)
-const editingId = ref(null)
 const form = ref({ title: '', description: '', durationMinutes: 30, isActive: true })
 const error = ref(null)
 const loading = ref(false)
 
 onMounted(() => assessmentStore.fetchAll())
 
-function openCreate() {
-  editingId.value = null
-  form.value = { title: '', description: '', durationMinutes: 30, isActive: true }
-  showForm.value = true
-}
-
-function openEdit(assessment) {
-  editingId.value = assessment.id
-  form.value = {
-    title: assessment.title,
-    description: assessment.description || '',
-    durationMinutes: assessment.durationMinutes,
-    isActive: assessment.isActive,
-  }
-  showForm.value = true
-}
-
 function cancelForm() {
   showForm.value = false
-  editingId.value = null
   error.value = null
 }
 
@@ -44,11 +26,7 @@ async function handleSubmit() {
   error.value = null
   loading.value = true
   try {
-    if (editingId.value) {
-      await assessmentStore.update(editingId.value, form.value)
-    } else {
-      await assessmentStore.create(form.value)
-    }
+    await assessmentStore.create(form.value)
     cancelForm()
   } catch (e) {
     error.value = e.response?.data?.message || 'Failed to save assessment'
@@ -64,80 +42,84 @@ async function handleDelete(id) {
 </script>
 
 <template>
-  <div>
-    <header class="dashboard-header">
-      <div>
-        <h1>Assessments</h1>
-        <p class="text-muted">Manage your assessments and track candidate results.</p>
+  <div class="page__inner fade-in">
+    <header class="page__header">
+      <div class="page__title">
+        <span class="eyebrow">Workspace</span>
+        <h1>Your <em>assessments</em></h1>
+        <p class="page__subtitle">Create timed screens and invite candidates to take them.</p>
       </div>
-      <BaseButton @click="showForm ? cancelForm() : openCreate()">
-        {{ showForm ? 'Cancel' : '+ New Assessment' }}
-      </BaseButton>
+      <div class="page__actions">
+        <BaseButton v-if="!showForm" variant="primary" @click="showForm = true">+ New assessment</BaseButton>
+        <BaseButton v-else variant="ghost" @click="cancelForm">Cancel</BaseButton>
+      </div>
     </header>
 
-    <BaseCard v-if="showForm" class="form-card">
-      <h2 class="form-title">{{ editingId ? 'Edit Assessment' : 'New Assessment' }}</h2>
+    <!-- New assessment form -->
+    <BaseCard v-if="showForm" class="fade-in create-card">
+      <h2 class="display create-card__title">New assessment</h2>
       <form @submit.prevent="handleSubmit">
-        <FormGroup label="Title">
-          <BaseInput v-model="form.title" placeholder="e.g. Frontend Developer Assessment" required />
-        </FormGroup>
-        <FormGroup label="Description">
-          <BaseInput v-model="form.description" :rows="2" placeholder="Optional description..." />
-        </FormGroup>
-        <FormGroup label="Duration (minutes)">
-          <BaseInput v-model="form.durationMinutes" type="number" min="1" class="duration-input" required />
-        </FormGroup>
-        <p v-if="error" class="error-text">{{ error }}</p>
+        <div class="form-row create-card__row">
+          <div class="field">
+            <label class="field__label">Title</label>
+            <BaseInput v-model="form.title" placeholder="e.g. Senior Frontend Engineer" required />
+          </div>
+          <div class="field">
+            <label class="field__label">Duration (minutes)</label>
+            <BaseInput type="number" v-model.number="form.durationMinutes" :min="1" required />
+          </div>
+        </div>
+        <div class="field create-card__field">
+          <label class="field__label">Description</label>
+          <BaseInput v-model="form.description" placeholder="Short summary candidates will see before starting" />
+        </div>
+        <div class="checkbox-row create-card__checkbox">
+          <input type="checkbox" id="isActive" v-model="form.isActive" />
+          <label for="isActive">Active</label>
+        </div>
+        <p v-if="error" class="error-text create-card__error">{{ error }}</p>
         <div class="form-actions">
-          <BaseButton variant="outline" type="button" @click="cancelForm">Cancel</BaseButton>
-          <BaseButton type="submit" :loading="loading">
-            {{ editingId ? 'Save Changes' : 'Create' }}
-          </BaseButton>
+          <BaseButton type="button" variant="ghost" @click="cancelForm">Cancel</BaseButton>
+          <BaseButton type="submit" variant="primary" :loading="loading">Create →</BaseButton>
         </div>
       </form>
     </BaseCard>
 
+    <!-- Empty state -->
     <div v-if="assessmentStore.assessments.length === 0 && !showForm" class="empty-state">
-      <div class="empty-icon">🗂️</div>
       <p class="empty-title">No assessments yet</p>
       <p class="text-muted">Create your first assessment to start evaluating candidates.</p>
-      <BaseButton class="empty-action" @click="openCreate">+ New Assessment</BaseButton>
+      <BaseButton variant="primary" @click="showForm = true">+ New assessment</BaseButton>
     </div>
 
-    <div v-else class="assessment-list">
-      <BaseCard v-for="assessment in assessmentStore.assessments" :key="assessment.id">
+    <!-- Assessment list -->
+    <template v-else>
+      <div class="section">
+        <h2>All assessments</h2>
+        <span class="section__eyebrow">
+          <span class="num">{{ String(assessmentStore.assessments.length).padStart(2, '0') }}</span>
+        </span>
+      </div>
+
+      <div class="alist">
         <AssessmentCard
+          v-for="(assessment, i) in assessmentStore.assessments"
+          :key="assessment.id"
           :assessment="assessment"
-          @edit="openEdit"
+          :index="i"
+          @edit="router.push(`/assessments/${assessment.id}`)"
           @delete="handleDelete"
         />
-      </BaseCard>
-    </div>
+      </div>
+    </template>
   </div>
 </template>
 
 <style scoped>
-.dashboard-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: var(--space-xl);
-  gap: var(--space-md);
-}
-
-.dashboard-header h1 { margin-bottom: var(--space-xs); }
-
-.assessment-list {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-sm);
-}
-
-.duration-input { max-width: 160px; }
-
-@media (max-width: 640px) {
-  .dashboard-header {
-    flex-direction: column;
-  }
-}
+.create-card { padding: 28px; margin-bottom: 28px; }
+.create-card__title { font-size: 26px; margin: 0 0 20px; }
+.create-card__row { margin-bottom: 16px; }
+.create-card__field { margin-bottom: 16px; }
+.create-card__checkbox { margin-bottom: 20px; }
+.create-card__error { margin-bottom: 12px; }
 </style>

@@ -1,20 +1,21 @@
 import { defineStore } from 'pinia'
-import { ref, computed, watch } from 'vue'
+import { ref, watch } from 'vue'
+
+const THEMES = ['paper', 'dark']
 
 export const useThemeStore = defineStore('theme', () => {
-  const theme = ref(localStorage.getItem('theme') ?? 'system')
-  const prefersDark = ref(window.matchMedia('(prefers-color-scheme: dark)').matches)
+  const stored = localStorage.getItem('theme')
+  const theme = ref(stored === 'dark' ? 'dark' : 'paper')
 
-  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
-    prefersDark.value = e.matches
-  })
+  const isDark = ref(theme.value === 'dark')
 
-  const isDark = computed(() =>
-    theme.value === 'system' ? prefersDark.value : theme.value === 'dark'
-  )
-
-  watch(isDark, (dark) => {
-    document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light')
+  watch(theme, (t) => {
+    isDark.value = t === 'dark'
+    if (t === 'dark') {
+      document.documentElement.setAttribute('data-theme', 'dark')
+    } else {
+      document.documentElement.removeAttribute('data-theme')
+    }
   }, { immediate: true })
 
   function setTheme(value) {
@@ -22,9 +23,10 @@ export const useThemeStore = defineStore('theme', () => {
     localStorage.setItem('theme', value)
   }
 
-  function toggle() {
-    setTheme(isDark.value ? 'light' : 'dark')
+  function cycle() {
+    const next = THEMES[(THEMES.indexOf(theme.value) + 1) % THEMES.length]
+    setTheme(next)
   }
 
-  return { theme, isDark, toggle, setTheme }
+  return { theme, isDark, cycle, setTheme }
 })
