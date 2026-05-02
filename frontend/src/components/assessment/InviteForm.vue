@@ -1,34 +1,35 @@
 <script setup>
-import { ref } from 'vue'
-import { createInvite } from '@/api/assessments'
-import BaseButton from '@/components/ui/BaseButton.vue'
-import BaseCard from '@/components/ui/BaseCard.vue'
-import BaseInput from '@/components/ui/BaseInput.vue'
+import { ref } from "vue";
+import { createInvite } from "@/api/assessments";
+import BaseButton from "@/components/ui/BaseButton.vue";
+import BaseCard from "@/components/ui/BaseCard.vue";
+import BaseInput from "@/components/ui/BaseInput.vue";
+import { copyToClipboard } from "@/utils/clipboard";
 
 const props = defineProps({
   assessmentId: { type: Number, required: true },
-})
+});
 
-const emit = defineEmits(['sent', 'cancel'])
+const emit = defineEmits(["sent", "cancel"]);
 
-const form = ref({ candidateName: '', candidateEmail: '' })
-const loading = ref(false)
-const error = ref(null)
+const form = ref({ candidateName: "", candidateEmail: "" });
+const loading = ref(false);
+const error = ref(null);
 
-const appUrl = import.meta.env.VITE_APP_URL
+const appUrl = import.meta.env.VITE_APP_URL;
 
 async function handleSubmit() {
-  error.value = null
-  loading.value = true
+  error.value = null;
+  loading.value = true;
   try {
-    const res = await createInvite(props.assessmentId, form.value)
-    await navigator.clipboard.writeText(`${appUrl}/candidate/${res.data.inviteToken}`)
-    form.value = { candidateName: '', candidateEmail: '' }
-    emit('sent', res.data)
+    const res = await createInvite(props.assessmentId, form.value);
+    const autoCopied = await copyToClipboard(`${appUrl}/candidate/${res.data.inviteToken}`);
+    form.value = { candidateName: "", candidateEmail: "" };
+    emit("sent", { ...res.data, autoCopied: !!autoCopied });
   } catch (e) {
-    error.value = e.response?.data?.message || 'Failed to create invite'
+    error.value = e.response?.data?.message || "Failed to create invite";
   } finally {
-    loading.value = false
+    loading.value = false;
   }
 }
 </script>
@@ -47,7 +48,12 @@ async function handleSubmit() {
         </div>
         <div class="field">
           <label class="field__label">Email</label>
-          <BaseInput type="email" v-model="form.candidateEmail" placeholder="jane@example.com" required />
+          <BaseInput
+            type="email"
+            v-model="form.candidateEmail"
+            placeholder="jane@example.com"
+            required
+          />
         </div>
       </div>
       <p v-if="error" class="error-text invite-form__error">{{ error }}</p>
@@ -60,13 +66,32 @@ async function handleSubmit() {
 </template>
 
 <style scoped>
-.invite-form { padding: 24px; margin-bottom: 22px; }
-.invite-form__header { display: flex; align-items: baseline; gap: 12px; margin-bottom: 18px; }
-.invite-form__title { font-size: 24px; margin: 0; }
-.invite-form__row { margin-bottom: 18px; }
-.invite-form__error { margin-bottom: 12px; }
+.invite-form {
+  padding: 24px;
+  margin-bottom: 22px;
+}
+.invite-form__header {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+.invite-form__title {
+  font-size: 24px;
+  margin: 0;
+}
+.invite-form__row {
+  margin-bottom: 18px;
+}
+.invite-form__error {
+  margin-bottom: 12px;
+}
 
 @media (max-width: 640px) {
-  .invite-form__header { flex-direction: column; align-items: flex-start; gap: 4px; }
+  .invite-form__header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
 }
 </style>

@@ -118,6 +118,7 @@ function onSettingsSaved(updated) {
       <InviteBanner
         v-if="inviteResult"
         :invite-token="inviteResult.inviteToken"
+        :auto-copied="inviteResult.autoCopied"
         @dismiss="inviteResult = null"
       />
 
