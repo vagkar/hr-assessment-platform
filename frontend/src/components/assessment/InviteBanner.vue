@@ -1,26 +1,33 @@
 <script setup>
 import { ref } from 'vue'
 import BaseButton from '@/components/ui/BaseButton.vue'
-import BaseCard from '@/components/ui/BaseCard.vue'
+import { copyToClipboard } from '@/utils/clipboard'
 
 const props = defineProps({
   inviteToken: { type: String, required: true },
+  autoCopied: { type: Boolean, default: false },
 })
 
 const emit = defineEmits(['dismiss'])
 
 const appUrl = import.meta.env.VITE_APP_URL
-const copied = ref(false)
+const copied = ref(props.autoCopied)
+
+if (props.autoCopied) {
+  setTimeout(() => (copied.value = false), 2000)
+}
 
 async function copyLink() {
-  await navigator.clipboard.writeText(`${appUrl}/candidate/${props.inviteToken}`)
-  copied.value = true
-  setTimeout(() => (copied.value = false), 2000)
+  const ok = await copyToClipboard(`${appUrl}/candidate/${props.inviteToken}`)
+  if (ok) {
+    copied.value = true
+    setTimeout(() => (copied.value = false), 2000)
+  }
 }
 </script>
 
 <template>
-  <BaseCard class="fade-in invite-banner">
+  <div class="card fade-in invite-banner">
     <div class="invite-banner__body">
       <div class="invite-banner__check">✓</div>
       <div>
@@ -32,7 +39,7 @@ async function copyLink() {
       <BaseButton variant="ghost" sm @click="copyLink">{{ copied ? '✓ Copied' : 'Copy link' }}</BaseButton>
       <BaseButton variant="link" sm @click="emit('dismiss')">✕</BaseButton>
     </div>
-  </BaseCard>
+  </div>
 </template>
 
 <style scoped>
@@ -46,7 +53,8 @@ async function copyLink() {
   background: color-mix(in srgb, var(--ok) 8%, var(--surface));
   border-color: color-mix(in srgb, var(--ok) 25%, var(--rule));
 }
-.invite-banner__body { display: flex; align-items: center; gap: 14px; }
+.invite-banner__body { display: flex; align-items: center; gap: 14px; min-width: 0; flex: 1; }
+.invite-banner__body > div { min-width: 0; }
 .invite-banner__check {
   width: 32px;
   height: 32px;
@@ -62,14 +70,11 @@ async function copyLink() {
   font-size: 11px;
   color: var(--muted);
   margin-top: 2px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  max-width: 400px;
+  word-break: break-all;
 }
 .invite-banner__actions { display: flex; gap: 8px; flex-shrink: 0; }
 
-@media (max-width: 640px) {
+@media (max-width: 480px) {
   .invite-banner { flex-direction: column; align-items: flex-start; }
 }
 </style>
