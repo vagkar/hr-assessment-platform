@@ -26,6 +26,7 @@ public class AssessmentService {
     private final AssessmentRepository assessmentRepository;
     private final CompanyRepository companyRepository;
     private final CandidateSessionRepository candidateSessionRepository;
+    private final EmailService emailService;
 
     public List<AssessmentResponse> getAllByCompany(Long companyId) {
         return assessmentRepository.findAllByCompanyId(companyId)
@@ -82,6 +83,13 @@ public class AssessmentService {
         session.setInviteToken(token);
 
         candidateSessionRepository.save(session);
+
+        emailService.sendInviteEmail(
+                request.candidateEmail(),
+                request.candidateName(),
+                assessment.getTitle(),
+                token
+        );
 
         return new InviteResponse(token, "/api/candidate/session/" + token);
     }
