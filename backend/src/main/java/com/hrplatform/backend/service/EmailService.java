@@ -1,19 +1,18 @@
 package com.hrplatform.backend.service;
 
-import jakarta.mail.MessagingException;
-import jakarta.mail.internet.MimeMessage;
-import lombok.RequiredArgsConstructor;
+import com.resend.Resend;
+import com.resend.core.exception.ResendException;
+import com.resend.services.emails.model.CreateEmailOptions;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
+@Slf4j
 @Service
-@RequiredArgsConstructor
 public class EmailService {
 
-    private final JavaMailSender mailSender;
+    private final Resend resend;
 
     @Value("${app.mail.from}")
     private String from;
@@ -21,22 +20,25 @@ public class EmailService {
     @Value("${app.mail.app-url}")
     private String appUrl;
 
+    public EmailService(@Value("${RESEND_API_KEY}") String apiKey) {
+        this.resend = new Resend(apiKey);
+    }
+
     @Async
     public void sendInviteEmail(String toEmail, String candidateName, String assessmentTitle, String inviteToken) {
+        String inviteUrl = appUrl + "/candidate/" + inviteToken;
+
+        CreateEmailOptions params = CreateEmailOptions.builder()
+                .from(from)
+                .to(toEmail)
+                .subject("You've been invited to complete an assessment: " + assessmentTitle)
+                .html(buildHtml(candidateName, assessmentTitle, inviteUrl))
+                .build();
+
         try {
-            MimeMessage message = mailSender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
-
-            helper.setFrom(from);
-            helper.setTo(toEmail);
-            helper.setSubject("You've been invited to complete an assessment: " + assessmentTitle);
-
-            String inviteUrl = appUrl + "/candidate/" + inviteToken;
-            helper.setText(buildHtml(candidateName, assessmentTitle, inviteUrl), true);
-
-            mailSender.send(message);
-        } catch (MessagingException e) {
-            // log but don't fail the invite creation
+            resend.emails().send(params);
+        } catch (ResendException e) {
+            log.error("Failed to send invite email to {}: {}", toEmail, e.getMessage());
         }
     }
 
