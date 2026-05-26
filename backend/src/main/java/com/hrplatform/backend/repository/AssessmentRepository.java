@@ -10,4 +10,5 @@ public interface AssessmentRepository extends JpaRepository<Assessment, Long> {
     List<Assessment> findAllByCompanyId(Long companyId);
     Optional<Assessment> findByIdAndCompanyId(Long id, Long companyId);
     boolean existsByIdAndCompanyId(Long id, Long companyId);
+    long countByCompanyIdAndIsActiveTrue(Long companyId);
 }

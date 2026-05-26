@@ -1,5 +1,6 @@
 import apiClient from './client'
 
+export const getDashboardStats = () => apiClient.get('/analytics/dashboard')
 export const getAssessments = () => apiClient.get('/assessments')
 export const createAssessment = (data) => apiClient.post('/assessments', data)
 export const updateAssessment = (id, data) => apiClient.put(`/assessments/${id}`, data)

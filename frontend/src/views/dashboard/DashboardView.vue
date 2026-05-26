@@ -6,6 +6,8 @@ import AssessmentCard from '@/components/assessment/AssessmentCard.vue'
 import BaseButton from '@/components/ui/BaseButton.vue'
 import BaseCard from '@/components/ui/BaseCard.vue'
 import BaseInput from '@/components/ui/BaseInput.vue'
+import StatCard from '@/components/ui/StatCard.vue'
+import { getDashboardStats } from '@/api/assessments'
 
 const router = useRouter()
 const assessmentStore = useAssessmentStore()
@@ -14,8 +16,13 @@ const showForm = ref(false)
 const form = ref({ title: '', description: '', durationMinutes: 30, isActive: true })
 const error = ref(null)
 const loading = ref(false)
+const stats = ref(null)
 
-onMounted(() => assessmentStore.fetchAll())
+onMounted(async () => {
+  await assessmentStore.fetchAll()
+  const res = await getDashboardStats()
+  stats.value = res.data
+})
 
 function cancelForm() {
   showForm.value = false
@@ -54,6 +61,27 @@ async function handleDelete(id) {
         <BaseButton v-else variant="ghost" @click="cancelForm">Cancel</BaseButton>
       </div>
     </header>
+
+    <!-- Stats row -->
+    <div v-if="stats" class="card stats-panel">
+      <div class="stats-panel__item">
+        <div class="stats-panel__label">Active assessments</div>
+        <div class="stats-panel__value">{{ stats.activeAssessments }}</div>
+      </div>
+      <div class="stats-panel__item">
+        <div class="stats-panel__label">Invites sent</div>
+        <div class="stats-panel__value">{{ stats.invitesSent }}</div>
+      </div>
+      <div class="stats-panel__item">
+        <div class="stats-panel__label">Completed</div>
+        <div class="stats-panel__value">{{ stats.completed }}</div>
+        <div class="stats-panel__sub">{{ stats.completionRate }}% completion</div>
+      </div>
+      <div class="stats-panel__item">
+        <div class="stats-panel__label">Avg. score</div>
+        <div class="stats-panel__value">{{ stats.avgScore != null ? `${Math.round(stats.avgScore)}%` : '—' }}</div>
+      </div>
+    </div>
 
     <!-- New assessment form -->
     <BaseCard v-if="showForm" class="fade-in create-card">
@@ -116,6 +144,43 @@ async function handleDelete(id) {
 </template>
 
 <style scoped>
+.stats-panel {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  margin-bottom: 28px;
+  padding: 0;
+  overflow: hidden;
+}
+.stats-panel__item {
+  padding: 20px 24px;
+  border-right: 1px solid var(--rule);
+}
+.stats-panel__item:last-child { border-right: none; }
+.stats-panel__label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 8px;
+}
+.stats-panel__value {
+  font-size: 36px;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--ink);
+}
+.stats-panel__sub {
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 6px;
+}
+@media (max-width: 640px) {
+  .stats-panel { grid-template-columns: repeat(2, 1fr); }
+  .stats-panel__item:nth-child(2) { border-right: none; }
+  .stats-panel__item:nth-child(1),
+  .stats-panel__item:nth-child(2) { border-bottom: 1px solid var(--rule); }
+}
 .create-card { padding: 28px; margin-bottom: 28px; }
 .create-card__title { font-size: 26px; margin: 0 0 20px; }
 .create-card__row { margin-bottom: 16px; }

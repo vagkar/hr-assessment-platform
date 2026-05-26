@@ -15,6 +15,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import org.springframework.data.domain.PageRequest;
+
 import java.util.List;
 import java.util.UUID;
 
@@ -96,6 +98,10 @@ public class AssessmentService {
 
     private AssessmentResponse toResponse(Assessment a) {
         Long companyId = a.getCompanyId() != null ? a.getCompanyId() : a.getCompany().getId();
+        long inviteCount = candidateSessionRepository.countByAssessmentId(a.getId());
+        long completedCount = candidateSessionRepository.countCompletedByAssessmentId(a.getId());
+        var avgScore = candidateSessionRepository.avgScoreByAssessmentId(a.getId());
+        var recentScores = candidateSessionRepository.findRecentScoresByAssessmentId(a.getId(), PageRequest.of(0, 6));
         return new AssessmentResponse(
                 a.getId(),
                 companyId,
@@ -103,7 +109,11 @@ public class AssessmentService {
                 a.getDescription(),
                 a.getDurationMinutes(),
                 a.getIsActive(),
-                a.getCreatedAt()
+                a.getCreatedAt(),
+                inviteCount,
+                completedCount,
+                avgScore,
+                recentScores
         );
     }
 }
