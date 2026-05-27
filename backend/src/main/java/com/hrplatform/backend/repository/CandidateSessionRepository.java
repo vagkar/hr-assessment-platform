@@ -1,5 +1,6 @@
 package com.hrplatform.backend.repository;
 
+import com.hrplatform.backend.model.dto.assessment.AssessmentStatsRow;
 import com.hrplatform.backend.model.entity.CandidateSession;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -71,14 +72,46 @@ public interface CandidateSessionRepository extends JpaRepository<CandidateSessi
             @Param("companyId") Long companyId
     );
 
-    @Query("""
-        SELECT cs FROM CandidateSession cs
-        JOIN cs.assessment a
-        WHERE a.id = :assessmentId AND a.company.id = :companyId
-        AND cs.status = 'COMPLETED' AND cs.startedAt IS NOT NULL AND cs.completedAt IS NOT NULL
-    """)
-    List<CandidateSession> findCompletedSessionsWithTimeByAssessmentIdAndCompanyId(
+    @Query(value = """
+        SELECT AVG(EXTRACT(EPOCH FROM (cs.completed_at - cs.started_at)) / 60.0)
+        FROM candidate_sessions cs
+        JOIN assessments a ON a.id = cs.assessment_id
+        WHERE a.id = :assessmentId AND a.company_id = :companyId
+          AND cs.status = 'COMPLETED'
+          AND cs.started_at IS NOT NULL AND cs.completed_at IS NOT NULL
+    """, nativeQuery = true)
+    Double avgCompletionMinutesByAssessmentIdAndCompanyId(
             @Param("assessmentId") Long assessmentId,
             @Param("companyId") Long companyId
     );
+
+    @Query("""
+        SELECT new com.hrplatform.backend.model.dto.assessment.AssessmentStatsRow(
+            a.id,
+            COUNT(cs.id),
+            COUNT(CASE WHEN cs.status = com.hrplatform.backend.model.entity.SessionStatus.COMPLETED THEN 1 END),
+            AVG(CASE WHEN cs.status = com.hrplatform.backend.model.entity.SessionStatus.COMPLETED AND cs.score IS NOT NULL THEN cs.score END)
+        )
+        FROM Assessment a
+        LEFT JOIN CandidateSession cs ON cs.assessment = a
+        WHERE a.company.id = :companyId
+        GROUP BY a.id
+    """)
+    List<AssessmentStatsRow> findStatsByCompanyId(@Param("companyId") Long companyId);
+
+    @Query(value = """
+        SELECT assessment_id, score
+        FROM (
+            SELECT cs.assessment_id, cs.score,
+                   ROW_NUMBER() OVER (PARTITION BY cs.assessment_id ORDER BY cs.completed_at DESC) AS rn
+            FROM candidate_sessions cs
+            JOIN assessments a ON a.id = cs.assessment_id
+            WHERE a.company_id = :companyId
+              AND cs.status = 'COMPLETED'
+              AND cs.score IS NOT NULL
+        ) sub
+        WHERE rn <= 6
+        ORDER BY assessment_id, rn DESC
+    """, nativeQuery = true)
+    List<Object[]> findRecentScoresByCompanyId(@Param("companyId") Long companyId);
 }

@@ -4,7 +4,6 @@ import com.hrplatform.backend.exception.ResourceNotFoundException;
 import com.hrplatform.backend.model.dto.analytics.AssessmentAnalyticsResponse;
 import com.hrplatform.backend.model.dto.dashboard.DashboardStatsResponse;
 import com.hrplatform.backend.model.entity.Assessment;
-import com.hrplatform.backend.model.entity.CandidateSession;
 import com.hrplatform.backend.repository.AnswerRepository;
 import com.hrplatform.backend.repository.AssessmentRepository;
 import com.hrplatform.backend.repository.CandidateSessionRepository;
@@ -14,7 +13,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.time.Duration;
 import java.util.List;
 
 @Service
@@ -72,15 +70,9 @@ public class AnalyticsService {
         long d3 = scores.stream().filter(s -> s.compareTo(b75) >= 0).count();
         List<Long> scoreDistribution = List.of(d0, d1, d2, d3);
 
-        List<CandidateSession> completedSessions = candidateSessionRepository
-                .findCompletedSessionsWithTimeByAssessmentIdAndCompanyId(assessmentId, companyId);
-        Integer avgCompletionMinutes = null;
-        if (!completedSessions.isEmpty()) {
-            long totalMinutes = completedSessions.stream()
-                    .mapToLong(s -> Duration.between(s.getStartedAt(), s.getCompletedAt()).toMinutes())
-                    .sum();
-            avgCompletionMinutes = (int) (totalMinutes / completedSessions.size());
-        }
+        Double avgMinutesRaw = candidateSessionRepository
+                .avgCompletionMinutesByAssessmentIdAndCompanyId(assessmentId, companyId);
+        Integer avgCompletionMinutes = avgMinutesRaw != null ? (int) Math.round(avgMinutesRaw) : null;
 
         List<Object[]> rawStats = answerRepository
                 .findQuestionDifficultyByAssessmentIdAndCompanyId(assessmentId, companyId);
