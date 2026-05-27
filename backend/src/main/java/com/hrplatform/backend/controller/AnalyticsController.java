@@ -1,5 +1,6 @@
 package com.hrplatform.backend.controller;
 
+import com.hrplatform.backend.model.dto.analytics.AssessmentAnalyticsResponse;
 import com.hrplatform.backend.model.dto.dashboard.DashboardStatsResponse;
 import com.hrplatform.backend.security.UserPrincipal;
 import com.hrplatform.backend.service.AnalyticsService;
@@ -7,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -21,5 +23,11 @@ public class AnalyticsController {
     public ResponseEntity<DashboardStatsResponse> getDashboardStats() {
         UserPrincipal principal = (UserPrincipal) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         return ResponseEntity.ok(analyticsService.getDashboardStats(principal.companyId()));
+    }
+
+    @GetMapping("/assessment/{id}")
+    public ResponseEntity<AssessmentAnalyticsResponse> getAssessmentAnalytics(@PathVariable Long id) {
+        UserPrincipal principal = (UserPrincipal) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        return ResponseEntity.ok(analyticsService.getAssessmentAnalytics(id, principal.companyId()));
     }
 }

@@ -58,4 +58,27 @@ public interface CandidateSessionRepository extends JpaRepository<CandidateSessi
     """)
     List<BigDecimal> findRecentScoresByAssessmentId(@Param("assessmentId") Long assessmentId,
                                                      org.springframework.data.domain.Pageable pageable);
+
+    @Query("""
+        SELECT cs.score FROM CandidateSession cs
+        JOIN cs.assessment a
+        WHERE a.id = :assessmentId AND a.company.id = :companyId
+        AND cs.status = 'COMPLETED' AND cs.score IS NOT NULL
+        ORDER BY cs.score
+    """)
+    List<BigDecimal> findAllCompletedScoresByAssessmentIdAndCompanyId(
+            @Param("assessmentId") Long assessmentId,
+            @Param("companyId") Long companyId
+    );
+
+    @Query("""
+        SELECT cs FROM CandidateSession cs
+        JOIN cs.assessment a
+        WHERE a.id = :assessmentId AND a.company.id = :companyId
+        AND cs.status = 'COMPLETED' AND cs.startedAt IS NOT NULL AND cs.completedAt IS NOT NULL
+    """)
+    List<CandidateSession> findCompletedSessionsWithTimeByAssessmentIdAndCompanyId(
+            @Param("assessmentId") Long assessmentId,
+            @Param("companyId") Long companyId
+    );
 }
