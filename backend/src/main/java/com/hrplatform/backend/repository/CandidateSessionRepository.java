@@ -89,8 +89,8 @@ public interface CandidateSessionRepository extends JpaRepository<CandidateSessi
         SELECT new com.hrplatform.backend.model.dto.assessment.AssessmentStatsRow(
             a.id,
             COUNT(cs.id),
-            COUNT(CASE WHEN cs.status = com.hrplatform.backend.model.entity.SessionStatus.COMPLETED THEN 1 END),
-            AVG(CASE WHEN cs.status = com.hrplatform.backend.model.entity.SessionStatus.COMPLETED AND cs.score IS NOT NULL THEN cs.score END)
+            COUNT(CASE WHEN cs.status = 'COMPLETED' THEN 1 END),
+            AVG(CASE WHEN cs.status = 'COMPLETED' AND cs.score IS NOT NULL THEN cs.score END)
         )
         FROM Assessment a
         LEFT JOIN CandidateSession cs ON cs.assessment = a
