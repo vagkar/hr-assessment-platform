@@ -2,7 +2,7 @@ package com.hrplatform.backend.model.dto.candidate;
 
 import com.hrplatform.backend.model.entity.SessionStatus;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 
 public record CandidateSessionView(
@@ -10,6 +10,6 @@ public record CandidateSessionView(
         String assessmentTitle,
         Integer durationMinutes,
         SessionStatus status,
-        LocalDateTime startedAt,
+        Instant startedAt,
         List<CandidateQuestionView> questions
 ) {}
