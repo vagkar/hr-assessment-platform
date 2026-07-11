@@ -1,7 +1,7 @@
 package com.hrplatform.backend.model.dto.assessment;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 
 public record AssessmentResponse(
@@ -11,7 +11,7 @@ public record AssessmentResponse(
         String description,
         Integer durationMinutes,
         Boolean isActive,
-        LocalDateTime createdAt,
+        Instant createdAt,
         long inviteCount,
         long completedCount,
         BigDecimal avgScore,

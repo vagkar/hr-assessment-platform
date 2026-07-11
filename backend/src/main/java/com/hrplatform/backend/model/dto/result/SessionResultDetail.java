@@ -3,7 +3,7 @@ package com.hrplatform.backend.model.dto.result;
 import com.hrplatform.backend.model.entity.SessionStatus;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 
 public record SessionResultDetail(
@@ -12,7 +12,7 @@ public record SessionResultDetail(
         String candidateEmail,
         SessionStatus status,
         BigDecimal score,
-        LocalDateTime startedAt,
-        LocalDateTime completedAt,
+        Instant startedAt,
+        Instant completedAt,
         List<AnswerDetail> answers
 ) {}

@@ -14,7 +14,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.time.LocalDateTime;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.List;
 
 @Service
@@ -55,7 +56,7 @@ public class CandidateService {
         }
 
         session.setStatus(SessionStatus.IN_PROGRESS);
-        session.setStartedAt(LocalDateTime.now());
+        session.setStartedAt(Instant.now());
         sessionRepository.save(session);
 
         return loadSession(token);
@@ -68,10 +69,10 @@ public class CandidateService {
             throw new BadRequestException("Session is not in progress");
         }
 
-        LocalDateTime deadline = session.getStartedAt()
-                .plusMinutes(session.getAssessment().getDurationMinutes())
+        Instant deadline = session.getStartedAt()
+                .plus(Duration.ofMinutes(session.getAssessment().getDurationMinutes()))
                 .plusSeconds(30);
-        if (LocalDateTime.now().isAfter(deadline)) {
+        if (Instant.now().isAfter(deadline)) {
             throw new BadRequestException("Time has expired");
         }
 
@@ -111,7 +112,7 @@ public class CandidateService {
                 : null;
 
         session.setStatus(SessionStatus.COMPLETED);
-        session.setCompletedAt(LocalDateTime.now());
+        session.setCompletedAt(Instant.now());
         session.setScore(score);
         sessionRepository.save(session);
 
